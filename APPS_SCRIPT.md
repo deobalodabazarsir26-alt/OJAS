@@ -440,18 +440,17 @@ function doPost(e) {
         return handleCascadingAdvertisementDelete(idValue);
       }
 
+      let deleted = false;
       const data = sheet.getDataRange().getValues();
       const headers = data[0];
       const idIndex = headers.indexOf(idColumn);
 
       if (idIndex === -1) return ContentService.createTextOutput("Error: ID Column not found").setMimeType(ContentService.MimeType.TEXT);
 
-      let deleted = false;
-      for (let i = 1; i < data.length; i++) {
+      for (let i = data.length - 1; i >= 1; i--) {
         if (String(data[i][idIndex]).trim() === String(idValue).trim()) {
           sheet.deleteRow(i + 1);
           deleted = true;
-          break;
         }
       }
       return ContentService.createTextOutput(deleted ? "Deleted" : "Error: Record not found").setMimeType(ContentService.MimeType.TEXT);

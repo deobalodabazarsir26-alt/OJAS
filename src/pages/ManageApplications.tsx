@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { sheetService } from '../services/sheetService';
 import { useProgress } from '../context/ProgressContext';
-import { Application, Advertisement, Post, GeneralUser, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo } from '../types';
+import { Application, Advertisement, Post, GeneralUser, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
 import { FileText, Download, Trash2, Search, Filter, AlertTriangle, Loader2, ChevronLeft, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -68,16 +68,27 @@ const ManageApplications: React.FC = () => {
       
       // 1. Delete Files from Drive
       updateProgress(10, t('manage_applications.progress_finding', 'Finding related records...'));
-      const addInfos = await sheetService.getAll<AdditionalInfo>('Additional_Info');
-      const foundAddInfo = addInfos.find(i => String(i.Appl_ID) === String(appl.Appl_ID));
+      const [addInfos, allClaims] = await Promise.all([
+        sheetService.getAll<AdditionalInfo>('Additional_Info'),
+        sheetService.getAll<Claim>('Claim')
+      ]);
       
+      const foundAddInfo = addInfos.find(i => String(i.Appl_ID) === String(appl.Appl_ID));
+      const applClaims = allClaims.filter(c => String(c.Appl_ID) === String(appl.Appl_ID));
+      
+      const filesToDelete: string[] = [];
       if (foundAddInfo) {
-        updateProgress(30, t('manage_applications.progress_files', 'Cleaning up files from Drive...'));
-        const filesToDelete: string[] = [];
         if (foundAddInfo.Domicile_Certificate_URL?.startsWith('http')) filesToDelete.push(foundAddInfo.Domicile_Certificate_URL);
         if (foundAddInfo.Caste_Certificate_URL?.startsWith('http')) filesToDelete.push(foundAddInfo.Caste_Certificate_URL);
         if (foundAddInfo.PwD_Certificate_URL?.startsWith('http')) filesToDelete.push(foundAddInfo.PwD_Certificate_URL);
-        
+      }
+      
+      applClaims.forEach(claim => {
+        if (claim.Proof_Doc_URL?.startsWith('http')) filesToDelete.push(claim.Proof_Doc_URL);
+      });
+
+      if (filesToDelete.length > 0) {
+        updateProgress(30, t('manage_applications.progress_files', 'Cleaning up files from Drive...'));
         let count = 0;
         for (const fileUrl of filesToDelete) {
           try {
@@ -93,16 +104,38 @@ const ManageApplications: React.FC = () => {
       // 2. Delete related table records
       updateProgress(60, t('manage_applications.progress_secondary', 'Removing application profile details...'));
       console.log('Deleting from secondary tables sequentially...');
-      const secondaryTables = ['Additional_Info', 'Address_Info', 'Qualification_Info', 'Experience_Info'] as const;
+      
+      // Get all related records first to know how many entries to delete for 1:N relations
+      const [allQuals, allExps] = await Promise.all([
+        sheetService.getAll<QualificationInfo>('Qualification_Info'),
+        sheetService.getAll<ExperienceInfo>('Experience_Info')
+      ]);
+      
+      const qualCount = allQuals.filter(q => String(q.Appl_ID) === String(appl.Appl_ID)).length;
+      const expCount = allExps.filter(e => String(e.Appl_ID) === String(appl.Appl_ID)).length;
+      const claimCount = applClaims.length;
+
+      const secondaryTables = [
+        { name: 'Additional_Info', count: 1 },
+        { name: 'Address_Info', count: 1 },
+        { name: 'Qualification_Info', count: qualCount },
+        { name: 'Experience_Info', count: expCount },
+        { name: 'Claim', count: claimCount }
+      ] as const;
+
       let tableCount = 0;
       for (const table of secondaryTables) {
         tableCount++;
-        updateProgress(60 + (tableCount / secondaryTables.length * 20), t('manage_applications.progress_table', 'Removing data from {{table}}...', { table }));
-        try {
-          console.log(`Deleting ${table} for ${appl.Appl_ID}`);
-          await sheetService.delete(table as any, 'Appl_ID', appl.Appl_ID);
-        } catch (e) {
-          console.warn(`Non-critical delete failure for ${table}:`, e);
+        updateProgress(60 + (tableCount / secondaryTables.length * 20), t('manage_applications.progress_table', 'Removing data from {{table}}...', { table: table.name }));
+        
+        // Call delete for each found row (this handles the 1st-match-delete limitation of the current Apps Script)
+        for (let i = 0; i < table.count; i++) {
+          try {
+            console.log(`Deleting ${table.name} (${i+1}/${table.count}) for ${appl.Appl_ID}`);
+            await sheetService.delete(table.name as any, 'Appl_ID', appl.Appl_ID);
+          } catch (e) {
+            console.warn(`Non-critical delete failure for ${table.name}:`, e);
+          }
         }
       }
 

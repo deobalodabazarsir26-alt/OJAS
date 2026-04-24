@@ -240,12 +240,23 @@ const ManageAdvertisements: React.FC = () => {
         return;
       }
 
-      startProgress('Deleting advertisement and posts...');
-      // If no applications, we can safely delete the Ad and its Posts
-      await Promise.all([
-        sheetService.delete('Advertisement', 'Adv_ID', id),
-        sheetService.delete('Post', 'Adv_ID', id)
-      ]);
+      startProgress('Deleting advertisement and related posts...');
+      
+      // 1. Fetch related posts to handle 1:N deletion robustly
+      const allPosts = await sheetService.getAll<Post>('Post');
+      const adPosts = allPosts.filter(p => String(p.Adv_ID).trim() === String(id).trim());
+
+      // 2. Delete posts one by one to ensure all are removed from remote sheet 
+      // (safeguard against older Apps Script versions that only delete 1st match)
+      for (let i = 0; i < adPosts.length; i++) {
+        const p = adPosts[i];
+        updateProgress(40 + (i / adPosts.length) * 40, `Removing post: ${p.Post_Name}`);
+        await sheetService.delete('Post', 'Post_ID', p.Post_ID);
+      }
+
+      // 3. Delete advertisement
+      updateProgress(90, 'Removing advertisement record...');
+      await sheetService.delete('Advertisement', 'Adv_ID', id);
       
       setDeletingAdId(null);
       setAds(prev => prev.filter(ad => String(ad.Adv_ID) !== String(id)));
