@@ -539,13 +539,24 @@ const ManageAdvertisements: React.FC = () => {
                       <div className="text-xs text-gray-500">{getDeptName(ad.Dept_ID)}</div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-xs text-gray-600 flex items-center">
-                        <Calendar className="w-3 h-3 mr-1 text-blue-500" />
-                        {formatDate(ad.Start_Date)}
+                      <div className="mb-2">
+                        <div className="text-[10px] font-bold text-blue-600 uppercase mb-0.5">{t('landing.appl_filling')}</div>
+                        <div className="text-xs text-gray-600 flex items-center">
+                          <Calendar className="w-3 h-3 mr-1 text-blue-500" />
+                          {formatDate(ad.Start_Date)} to {formatDate(ad.End_Date)}
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-600 flex items-center">
-                        <Calendar className="w-3 h-3 mr-1 text-red-500" />
-                        {formatDate(ad.End_Date)}
+                      
+                      <div>
+                        <div className="text-[10px] font-bold text-amber-600 uppercase mb-0.5">{t('landing.claims_objections')}</div>
+                        {ad.Clm_Strt_Dt && ad.Clm_End_Dt ? (
+                          <div className="text-xs text-gray-600 flex items-center">
+                            <AlertCircle className="w-3 h-3 mr-1 text-amber-500" />
+                            {formatDate(ad.Clm_Strt_Dt)} to {formatDate(ad.Clm_End_Dt)}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-400 italic">Not Scheduled</div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-xs font-bold">

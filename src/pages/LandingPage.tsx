@@ -225,11 +225,35 @@ const LandingPage: React.FC = () => {
                       <MapPin className="w-4 h-4 mr-2 text-gray-400" />
                       {getOfficeDisplay(ad.Office_ID)}
                     </div>
-                    <div className="space-y-1 mb-4">
-                      <div className="flex items-center text-xs text-gray-500">
-                        <Calendar className="w-3 h-3 mr-2" />
-                        {t('common.ended_on', 'Ended on')}: {formatDate(ad.End_Date)}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-start text-sm text-gray-500">
+                        <Calendar className="w-4 h-4 mr-2 text-gray-400 mt-0.5" />
+                        <div>
+                          <span className="font-semibold text-gray-600 block text-xs uppercase tracking-tight">
+                            {t('landing.appl_filling')}
+                          </span>
+                          <span className="text-xs">
+                            {t('landing.from_to', { start: formatDate(ad.Start_Date), end: formatDate(ad.End_Date) })}
+                          </span>
+                        </div>
                       </div>
+
+                      {(ad.Clm_Strt_Dt || ad.Clm_End_Dt) && (
+                        <div className="flex items-start text-sm text-gray-500">
+                          <AlertTriangle className="w-4 h-4 mr-2 text-amber-500/50 mt-0.5" />
+                          <div>
+                            <span className="font-semibold text-amber-700/70 block text-xs uppercase tracking-tight">
+                              {t('landing.claims_objections')}
+                            </span>
+                            <span className="text-xs">
+                              {t('landing.from_to', { 
+                                start: ad.Clm_Strt_Dt ? formatDate(ad.Clm_Strt_Dt) : '...', 
+                                end: ad.Clm_End_Dt ? formatDate(ad.Clm_End_Dt) : '...' 
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
                       <span className="text-xs text-gray-400">{t('landing.ref')}: {ad.Letter_No}</span>

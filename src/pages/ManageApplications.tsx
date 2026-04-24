@@ -329,18 +329,49 @@ const ManageApplications: React.FC = () => {
                 filteredApplications.map((app) => {
                   const user = users.find(u => String(u.User_ID) === String(app.User_ID));
                   const post = posts.find(p => String(p.Post_ID) === String(app.Post_ID));
+                  const ad = ads.find(a => String(a.Adv_ID) === String(app.Adv_ID));
+                  
+                  const getPhase = () => {
+                    if (!ad) return null;
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    const filingEnd = new Date(ad.End_Date);
+                    if (now <= filingEnd) return { label: t('landing.appl_filling'), color: 'text-blue-600 bg-blue-50' };
+                    
+                    if (ad.Clm_Strt_Dt && ad.Clm_End_Dt) {
+                      const clmStart = new Date(ad.Clm_Strt_Dt);
+                      const clmEnd = new Date(ad.Clm_End_Dt);
+                      if (now >= clmStart && now <= clmEnd) return { label: t('landing.claims_objections'), color: 'text-amber-600 bg-amber-50' };
+                    }
+                    
+                    return { label: t('landing.closed'), color: 'text-gray-500 bg-gray-50' };
+                  };
+                  const phase = getPhase();
+
                   return (
                     <motion.tr 
                       key={app.Appl_ID} 
                       className="hover:bg-gray-50"
                       layout
                     >
-                      <td className="px-6 py-4 text-sm font-mono">{app.Appl_ID}</td>
+                      <td className="px-6 py-4 text-sm font-mono">
+                        {app.Appl_ID}
+                        {phase && (
+                          <div className={`mt-1 text-[10px] px-1.5 py-0.5 rounded inline-block font-bold uppercase tracking-wider ${phase.color}`}>
+                            {phase.label}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">{user?.Candidate_Name || 'Unknown'}</div>
                         <div className="text-xs text-gray-500">{user?.Mobile}</div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">{post?.Post_Name}</td>
+                      <td className="px-6 py-4">
+                         <div className="text-sm text-gray-900 font-medium">{post?.Post_Name}</div>
+                         <div className="text-[10px] text-gray-500 uppercase font-bold truncate max-w-[200px]" title={ad?.Title}>
+                           {ad?.Title}
+                         </div>
+                      </td>
                       <td className="px-6 py-4 text-sm text-gray-500">{formatDate(app.Apply_Date)}</td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">

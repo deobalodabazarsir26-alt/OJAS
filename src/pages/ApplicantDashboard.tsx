@@ -73,7 +73,8 @@ const ApplicantDashboard: React.FC = () => {
 
   const getClaimPeriodMessage = (advId: string) => {
     const ad = ads.find(a => String(a.Adv_ID) === String(advId));
-    if (!ad || !ad.Clm_Strt_Dt || !ad.Clm_End_Dt) return "";
+    if (!ad) return "";
+    if (!ad.Clm_Strt_Dt || !ad.Clm_End_Dt) return t('dashboard.claim_period_not_set', 'Claim Period: Not yet scheduled');
 
     return `${t('dashboard.claim_period')}: ${formatDate(ad.Clm_Strt_Dt)} to ${formatDate(ad.Clm_End_Dt)}`;
   };

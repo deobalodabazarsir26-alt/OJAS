@@ -251,7 +251,8 @@ const resources = {
         "supporting_doc": "Supporting Proof Document (JPG/PNG, max 2MB)",
         "click_upload": "Click to upload proof document",
         "cancel": "Cancel",
-        "submitting": "Submitting..."
+        "submitting": "Submitting...",
+        "claim_period_not_set": "Claim Period: Not yet scheduled"
       },
       "manage": {
         "title": "Management",
@@ -777,7 +778,8 @@ const resources = {
         "supporting_doc": "सहायक प्रमाण दस्तावेज़ (JPG/PNG, अधिकतम 2MB)",
         "click_upload": "प्रमाण दस्तावेज़ अपलोड करने के लिए क्लिक करें",
         "cancel": "रद्द करें",
-        "submitting": "प्रस्तुत किया जा रहा है..."
+        "submitting": "प्रस्तुत किया जा रहा है...",
+        "claim_period_not_set": "दावा अवधि: अभी निर्धारित नहीं"
       },
       "manage": {
         "title": "प्रबंधन",
