@@ -246,109 +246,171 @@ const ApplicantDashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white shadow-sm border border-gray-100 rounded-xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="text-lg font-bold text-gray-900 font-hindi-support">{t('dashboard.recent_appls')}</h2>
+      <div className="bg-white shadow-sm border border-gray-200 rounded-2xl overflow-hidden mb-12">
+        <div className="px-8 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+          <h2 className="text-xl font-bold text-gray-900 font-hindi-support flex items-center">
+            <div className="p-2 bg-blue-50 rounded-lg mr-3">
+              <FileText className="w-5 h-5 text-blue-600" />
+            </div>
+            {t('dashboard.recent_appls')}
+          </h2>
+          <div className="flex items-center gap-2">
+             <span className="text-xs font-bold text-gray-500 bg-white px-3 py-1.5 rounded-full border border-gray-100 shadow-sm">
+               {applications.length} {t('dashboard.total_appls')}
+             </span>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
-              <tr>
-                <th className="px-6 py-3">{t('dashboard.appl_id')}</th>
-                <th className="px-6 py-3">{t('dashboard.advertisement')}</th>
-                <th className="px-6 py-3">{t('dashboard.post')}</th>
-                <th className="px-6 py-3">{t('dashboard.status')}</th>
-                <th className="px-6 py-3">{t('dashboard.remarks')}</th>
-                <th className="px-6 py-3 text-right">{t('dashboard.actions')}</th>
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/50 text-[11px] uppercase text-gray-500 font-bold tracking-wider border-b border-gray-100">
+                <th className="px-8 py-4">{t('dashboard.appl_id')}</th>
+                <th className="px-8 py-4">{t('dashboard.advertisement')} & {t('dashboard.post')}</th>
+                <th className="px-8 py-4">{t('dashboard.status')}</th>
+                <th className="px-8 py-4 text-center">{t('dashboard.claims', 'Claims')}</th>
+                <th className="px-8 py-4 text-center">{t('dashboard.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {applications.length > 0 ? (
-                applications.map((appl, index) => (
-                  <motion.tr
-                    key={`${appl.Appl_ID}-${index}`}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="hover:bg-gray-50"
-                  >
-                    <td className="px-6 py-4 font-mono text-sm">{appl.Appl_ID}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{getAdTitle(appl.Adv_ID)}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{getPostName(appl.Post_ID)}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        appl.Status === 'Eligible' ? 'bg-green-100 text-green-700' :
-                        appl.Status === 'Ineligible' ? 'bg-red-100 text-red-700' :
-                        'bg-blue-100 text-blue-700'
-                      }`}>
-                         {translateConstant(t, appl.Status || 'Submitted')}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500 italic">
-                      {appl.Remark || '-'}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-3">
-                      {appl.Status === 'Ineligible' && !claims.some(c => String(c.Appl_ID) === String(appl.Appl_ID)) && (
-                        <div className="flex flex-col items-end">
-                          <button
-                            onClick={() => {
-                              if (!isClaimPeriodActive(appl.Adv_ID)) {
-                                toast.error(`Claims session is not active for this advertisement. ${getClaimPeriodMessage(appl.Adv_ID)}`);
-                                return;
-                              }
-                              setSelectedAppl(appl);
-                              setShowClaimModal(true);
-                            }}
-                            className={`${isClaimPeriodActive(appl.Adv_ID) ? 'text-red-600 hover:text-red-800' : 'text-gray-400 cursor-not-allowed'} text-xs font-bold flex items-center justify-end ml-auto mb-1`}
-                          >
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                            {t('dashboard.submit_claim')}
-                          </button>
-                          {getClaimPeriodMessage(appl.Adv_ID) && (
-                            <span className="text-[9px] text-gray-500 italic mb-2">
-                              {getClaimPeriodMessage(appl.Adv_ID)}
-                            </span>
+                applications.map((appl, index) => {
+                  const ad = ads.find(a => String(a.Adv_ID) === String(appl.Adv_ID));
+                  const claim = claims.find(c => String(c.Appl_ID) === String(appl.Appl_ID));
+                  
+                  return (
+                    <motion.tr
+                      key={`${appl.Appl_ID}-${index}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="group hover:bg-blue-50/20 transition-colors"
+                    >
+                      <td className="px-8 py-6 align-top">
+                        <div className="font-mono text-xs font-bold text-gray-400 group-hover:text-blue-600 transition-colors">
+                          #{appl.Appl_ID}
+                        </div>
+                        <div className="text-[10px] text-gray-400 mt-1">
+                          {formatDate(appl.Apply_Date)}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 align-top max-w-md">
+                        <div className="text-sm font-bold text-gray-900 mb-1 leading-snug group-hover:text-blue-700 transition-colors">
+                          {getPostName(appl.Post_ID)}
+                        </div>
+                        <div className="text-xs text-gray-500 flex items-center line-clamp-1" title={getAdTitle(appl.Adv_ID)}>
+                          <span className="w-1 h-1 bg-gray-300 rounded-full mr-2 shrink-0"></span>
+                          {getAdTitle(appl.Adv_ID)}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 align-top">
+                        <div className="flex flex-col gap-2">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit shadow-xs border ${
+                            appl.Status === 'Eligible' ? 'bg-green-50 text-green-700 border-green-100' :
+                            appl.Status === 'Ineligible' ? 'bg-red-50 text-red-700 border-red-100' :
+                            'bg-blue-50 text-blue-700 border-blue-100'
+                          }`}>
+                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                               appl.Status === 'Eligible' ? 'bg-green-500' :
+                               appl.Status === 'Ineligible' ? 'bg-red-500' :
+                               'bg-blue-500'
+                            }`} />
+                            {translateConstant(t, appl.Status || 'Submitted')}
+                          </span>
+                          
+                          {appl.Remark && (
+                            <div className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-[10px] text-gray-600 italic">
+                               <span className="font-bold text-gray-400 mr-1 not-italic">{t('dashboard.remarks')}:</span>
+                               {appl.Remark}
+                            </div>
                           )}
                         </div>
-                      )}
-                      
-                      {claims.find(c => String(c.Appl_ID) === String(appl.Appl_ID)) && (
-                        <div className="text-xs text-gray-500 font-medium mb-2">
-                          {t('dashboard.claim_status')}: <span className="font-bold text-blue-600">{claims.find(c => String(c.Appl_ID) === String(appl.Appl_ID))?.Status}</span>
-                        </div>
-                      )}
-
-                      <div className="flex flex-col space-y-2 items-end">
-                        {isApplicationEditable(appl.Adv_ID) && (
-                          <button
-                            onClick={() => handleEditApplication(appl)}
-                            className="text-amber-600 hover:text-amber-800 flex items-center justify-end ml-auto text-sm font-bold"
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            {t('common.edit', 'Edit')}
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => downloadPDF(appl)}
-                          disabled={isGeneratingPDF === appl.Appl_ID}
-                          className="text-blue-600 hover:text-blue-800 flex items-center justify-end ml-auto disabled:opacity-50 text-sm"
-                        >
-                          {isGeneratingPDF === appl.Appl_ID ? (
-                            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                      </td>
+                      <td className="px-8 py-6 align-top">
+                        <div className="flex flex-col items-center">
+                          {claim ? (
+                             <div className="flex flex-col items-center bg-blue-50/50 p-2 rounded-lg border border-blue-100 min-w-[120px]">
+                               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter mb-1 border-b border-blue-200 w-full text-center pb-1">
+                                 {t('dashboard.claim_status')}
+                               </span>
+                               <span className={`text-[11px] font-bold ${
+                                 claim.Status === 'Pending' ? 'text-amber-600' : 
+                                 claim.Status === 'Approved' ? 'text-green-600' : 'text-red-600'
+                               }`}>
+                                 {claim.Status}
+                               </span>
+                             </div>
                           ) : (
-                            <Download className="w-4 h-4 mr-1" />
+                            appl.Status === 'Ineligible' ? (
+                              <div className="flex flex-col items-center group/claim">
+                                <button
+                                  onClick={() => {
+                                    if (!isClaimPeriodActive(appl.Adv_ID)) {
+                                      toast.error(`Claims session is not active for this advertisement. ${getClaimPeriodMessage(appl.Adv_ID)}`);
+                                      return;
+                                    }
+                                    setSelectedAppl(appl);
+                                    setShowClaimModal(true);
+                                  }}
+                                  className={`text-[11px] font-bold px-3 py-1.5 rounded-lg border transition-all flex items-center ${
+                                    isClaimPeriodActive(appl.Adv_ID) 
+                                      ? 'bg-red-50 text-red-600 border-red-100 hover:bg-red-600 hover:text-white hover:border-red-600 shadow-sm' 
+                                      : 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                                  }`}
+                                >
+                                  <AlertTriangle className="w-3.5 h-3.5 mr-1.5 transition-transform group-hover/claim:scale-110" />
+                                  {t('dashboard.submit_claim')}
+                                </button>
+                                {getClaimPeriodMessage(appl.Adv_ID) && (
+                                  <span className="text-[9px] text-gray-400 italic mt-1 font-medium bg-gray-50/50 px-2 py-0.5 rounded text-center whitespace-nowrap">
+                                    {getClaimPeriodMessage(appl.Adv_ID)}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 font-medium italic">-</span>
+                            )
                           )}
-                          {t('common.pdf')}
-                        </button>
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-center align-top">
+                        <div className="flex items-center justify-center gap-2">
+                          {isApplicationEditable(appl.Adv_ID) && (
+                            <button
+                              onClick={() => handleEditApplication(appl)}
+                              className="p-2 text-amber-600 hover:bg-amber-50 rounded-full transition-all border border-transparent hover:border-amber-100 shadow-xs group/btn"
+                              title={t('common.edit')}
+                            >
+                              <Edit className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                            </button>
+                          )}
+
+                          <button
+                            onClick={() => downloadPDF(appl)}
+                            disabled={isGeneratingPDF === appl.Appl_ID}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-all border border-transparent hover:border-blue-100 shadow-xs disabled:opacity-50 group/btn"
+                            title={t('common.pdf')}
+                          >
+                            {isGeneratingPDF === appl.Appl_ID ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Download className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                            )}
+                          </button>
+                        </div>
+                      </td>
+                    </motion.tr>
+                  );
+                })
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 font-hindi-support">
-                    {t('dashboard.no_appls')}
+                  <td colSpan={5} className="px-8 py-20 text-center">
+                    <div className="flex flex-col items-center max-w-xs mx-auto">
+                      <div className="p-4 bg-gray-50 rounded-full mb-4">
+                        <FileText className="w-10 h-10 text-gray-300" />
+                      </div>
+                      <p className="text-lg font-bold text-gray-900 font-hindi-support mb-1">No Applications Found</p>
+                      <p className="text-sm text-gray-500 font-hindi-support">{t('dashboard.no_appls')}</p>
+                    </div>
                   </td>
                 </tr>
               )}
