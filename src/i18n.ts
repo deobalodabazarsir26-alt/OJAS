@@ -509,7 +509,7 @@ const resources = {
         "delete_note_text": "Deleting an application will remove its records from:",
         "table_main": "Main Application table",
         "table_details": "Additional, Address, Qualification, and Experience details",
-        "table_drive": "Linked documents in Google Drive",
+        "table_drive": "Linked documents in Cloud Database",
         "delete_warning": "This action cannot be undone.",
         "delete_confirm": "Are you sure you want to delete application {{id}}? This will also delete all related documents and information.",
         "progress": {
@@ -1122,7 +1122,7 @@ const resources = {
         "delete_note_text": "आवेदन हटाने से इसके रिकॉर्ड यहाँ से हट जाएंगे:",
         "table_main": "मुख्य आवेदन तालिका",
         "table_details": "अतिरिक्त, पता, योग्यता और अनुभव विवरण",
-        "table_drive": "Google ड्राइव में लिंक किए गए दस्तावेज़",
+        "table_drive": "Cloud Database में लिंक किए गए दस्तावेज़",
         "delete_warning": "यह क्रिया पूर्ववत नहीं की जा सकती।",
         "delete_confirm": "क्या आप वाकई आवेदन {{id}} हटाना चाहते हैं? यह संबंधित सभी दस्तावेजों और जानकारी को भी हटा देगा।",
         "no_apps_found": "मानदंडों से कोई आवेदन नहीं मिला।",

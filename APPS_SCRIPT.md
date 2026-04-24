@@ -3,9 +3,9 @@
 Deploy this script as a Web App in your Google Apps Script editor to power your application's backend.
 
 ### Setup Instructions:
-1. **Create a Folder in Google Drive** where you want to store uploaded files.
+1. **Create a Folder in Cloud Database** where you want to store uploaded files.
 2. Open that folder and **copy its ID from the URL** (it's the long string of letters and numbers after `/folders/`).
-3. Open your Google Sheet.
+3. Open your Cloud Database.
 4. Go to **Extensions > Apps Script**.
 5. Delete any existing code and paste the code below.
 6. **CRITICAL:** Update `ROOT_FOLDER_ID` with the folder ID you copied in step 2.
@@ -224,7 +224,7 @@ function doGet(e) {
         let blob;
         let contentType;
         
-        // Check if it's a Google Drive URL
+        // Check if it's a Cloud Database URL
         let fileId = null;
         const driveMatch = url.match(/[-\w]{25,}/);
         if (driveMatch) {
@@ -484,7 +484,7 @@ function createJsonResponse(data) {
 }
 
 /**
- * Helper to handle Base64 file uploads to Google Drive
+ * Helper to handle Base64 file uploads to Cloud Database
  */
 function handleFileUploads(payload, sheetName) {
   try {
@@ -652,7 +652,7 @@ function handleCascadingUserDelete(userId) {
     }
   }
   
-  // 5. Delete Google Drive Folder
+  // 5. Delete Cloud Database Folder
   try {
     const folderNames = ["User_" + userIdStr, userIdStr];
     logToSheet("Searching for Drive Folders to Delete", { folderNames: folderNames });

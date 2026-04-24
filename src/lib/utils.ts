@@ -23,7 +23,7 @@ export const formatDate = (date: Date | string) => {
   if (isNaN(d.getTime())) return String(date);
   
   // The "One Day Less" fix:
-  // Date-only values from Google Sheets often arrive as ISO strings shifted by timezone (e.g., 18:30 UTC for IST midnight).
+  // Date-only values from Cloud Database often arrive as ISO strings shifted by timezone (e.g., 18:30 UTC for IST midnight).
   // Adding 12 hours "snaps" the date to the intended day regardless of most timezone shifts.
   const snapped = new Date(d.getTime() + (12 * 60 * 60 * 1000));
   
@@ -65,7 +65,7 @@ export function getEmbedUrl(url: string | undefined) {
   if (!url) return '';
   if (url.startsWith('data:')) return url;
   
-  // Handle Google Drive links
+  // Handle Cloud Database links
   if (url.includes('drive.google.com')) {
     const id = url.match(/[-\w]{25,}/);
     if (id) {

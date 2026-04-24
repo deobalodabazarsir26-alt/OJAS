@@ -133,7 +133,7 @@ const ManageConstants: React.FC = () => {
       await (sheetService as any).bulkInsert('Global_Constants', defaultConstants, true);
       
       setConstants(defaultConstants);
-      toast.success('Reset successful! Default values have been saved to the Google Sheet.');
+      toast.success('Reset successful! Default values have been saved to the Cloud Database.');
     } catch (error) {
       console.error('Error resetting constants:', error);
       toast.error('Error resetting values: ' + (error as any).message);
@@ -148,7 +148,7 @@ const ManageConstants: React.FC = () => {
     startProgress('Saving all values to cloud...');
     try {
       await (sheetService as any).bulkInsert('Global_Constants', constants, true);
-      toast.success('All values successfully saved to the Google Sheet!');
+      toast.success('All values successfully saved to the Cloud Database!');
     } catch (error) {
       console.error('Error saving to cloud:', error);
       toast.error('Error saving to cloud: ' + (error as any).message);

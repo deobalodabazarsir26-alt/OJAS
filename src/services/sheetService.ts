@@ -1,6 +1,6 @@
 // This service will handle data persistence.
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCYkmvmh-aexu3GRsVJGDnZ9TrmKXHsFhIAHO4dVxHpVSVDdTqDW1ZlvbbRNSC0YhS/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXi2PjhPtBjqa6791WGbjV6bd1MIjr3ngl04yJ-6JUfld0XMJDAA1BVIrIKacnlaEd/exec';
 
 const STORAGE_KEYS = {
   User: 'ojas_users',
@@ -214,9 +214,9 @@ export const sheetService = {
         const result = await response.text();
         if (result.startsWith('Error')) {
           if (result.includes('Sheet not found')) {
-            console.error(`ERROR: Sheet "${sheetName}" not found in your Google Sheet. Please run the "initDatabase" function in your Apps Script editor and re-deploy.`);
+            console.error(`ERROR: Sheet "${sheetName}" not found in your Cloud Database. Please run the "initDatabase" function in your Apps Script editor and re-deploy.`);
           } else if (result.includes('Access denied') || result.includes('DriveApp')) {
-            console.error('ERROR: Google Drive access denied. Please re-authorize your Apps Script and ensure you are logged into only one Google account.');
+            console.error('ERROR: Cloud Database access denied. Please re-authorize your Apps Script and ensure you are logged into only one Google account.');
           } else {
             console.error(`Apps Script Insert Error for ${sheetName}:`, result);
           }
