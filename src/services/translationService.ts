@@ -4,11 +4,20 @@ import { GoogleGenAI } from "@google/genai";
  * Service for translating text using Gemini API (Free).
  */
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+let ai: any = null;
+try {
+  const key = process.env.GEMINI_API_KEY;
+  if (key) {
+    ai = new GoogleGenAI({ apiKey: key });
+  }
+} catch (e) {
+  console.warn('Failed to initialize Gemini AI:', e);
+}
 
 export const translationService = {
   translate: async (text: string, targetLanguage: string = 'Hindi'): Promise<string> => {
     if (!text || text.trim() === '') return '';
+    if (!ai) return text;
 
     try {
       const response = await ai.models.generateContent({
