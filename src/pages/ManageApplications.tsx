@@ -60,6 +60,33 @@ const ManageApplications: React.FC = () => {
     }
 
     setIsDeleting(appl.Appl_ID);
+
+    // 0. Restrict deletion if Ad filing or claims is ongoing
+    const ad = ads.find(a => String(a.Adv_ID) === String(appl.Adv_ID));
+    if (ad) {
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // Normalize to start of day for date comparison
+      
+      const filingEndDate = new Date(ad.End_Date);
+      filingEndDate.setHours(23, 59, 59, 999); // End of day
+
+      if (now <= filingEndDate) {
+        toast.error(t('manage_applications.error_filing_active', 'Cannot delete: Application filing period is still active for this advertisement.'));
+        setIsDeleting(null);
+        return;
+      }
+
+      if (ad.Clm_End_Dt) {
+        const claimEndDate = new Date(ad.Clm_End_Dt);
+        claimEndDate.setHours(23, 59, 59, 999);
+        if (now <= claimEndDate) {
+          toast.error(t('manage_applications.error_claims_active', 'Cannot delete: Claims period is still active for this advertisement.'));
+          setIsDeleting(null);
+          return;
+        }
+      }
+    }
+
     const toastId = toast.loading(t('common.processing'));
     startProgress(t('manage_applications.progress_start', 'Starting deletion process...'));
     
