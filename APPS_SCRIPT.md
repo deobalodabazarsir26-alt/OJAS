@@ -329,6 +329,18 @@ function doPost(e) {
       }
     }
 
+    // 0.1 HANDLE FILE DELETION (No sheet required)
+    if (action === 'deleteFile') {
+      try {
+        const fileUrl = requestData.fileUrl;
+        if (!fileUrl) return ContentService.createTextOutput("Error: Missing fileUrl").setMimeType(ContentService.MimeType.TEXT);
+        deleteFileByUrl(fileUrl);
+        return ContentService.createTextOutput("Success").setMimeType(ContentService.MimeType.TEXT);
+      } catch (err) {
+        return ContentService.createTextOutput("Error: Delete failed. " + err.toString()).setMimeType(ContentService.MimeType.TEXT);
+      }
+    }
+
     const sheetName = requestData.sheetName;
     let payload = requestData.payload;
 
@@ -797,16 +809,17 @@ function deleteFileByUrl(url) {
   if (!url || typeof url !== 'string' || !url.includes('drive.google.com')) return;
   
   let fileId = '';
-  if (url.includes('id=')) {
-    fileId = url.split('id=')[1].split('&')[0];
-  } else if (url.includes('/d/')) {
-    fileId = url.split('/d/')[1].split('/')[0];
+  // Robust ID extraction using regex for various Drive URL formats
+  const idMatch = url.match(/[-\w]{25,}/);
+  if (idMatch) {
+    fileId = idMatch[0];
   }
   
   if (fileId) {
     try {
-      DriveApp.getFileById(fileId).setTrashed(true);
-      logToSheet("File Trashed", { url: url, id: fileId });
+      const file = DriveApp.getFileById(fileId);
+      file.setTrashed(true);
+      logToSheet("File Trashed", { url: url, id: fileId, name: file.getName() });
     } catch (e) {
       logToSheet("File Trashing Failed", { url: url, error: e.toString() });
     }

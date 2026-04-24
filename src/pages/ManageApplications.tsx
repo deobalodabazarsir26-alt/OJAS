@@ -94,7 +94,7 @@ const ManageApplications: React.FC = () => {
           try {
             count++;
             updateProgress(30 + (count / filesToDelete.length * 20), t('manage_applications.progress_file_deleting', 'Deleting file {{count}} of {{total}}...', { count, total: filesToDelete.length }));
-            await (sheetService as any).deleteFile?.(fileUrl);
+            await sheetService.deleteFile(fileUrl);
           } catch (e) {
             console.warn('Failed to delete file from drive:', fileUrl, e);
           }

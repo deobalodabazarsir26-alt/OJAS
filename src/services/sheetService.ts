@@ -1,6 +1,6 @@
 // This service will handle data persistence.
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyumYv2aMB-b7LrbOc9LJPhz223PsDvh1eOp1HWUdbvibutGmC4SSfkHlSk85YnDcdC/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCYkmvmh-aexu3GRsVJGDnZ9TrmKXHsFhIAHO4dVxHpVSVDdTqDW1ZlvbbRNSC0YhS/exec';
 
 const STORAGE_KEYS = {
   User: 'ojas_users',
