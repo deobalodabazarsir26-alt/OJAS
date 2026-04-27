@@ -304,23 +304,35 @@ const ApplicantDashboard: React.FC = () => {
                       </td>
                       <td className="px-8 py-6 align-top">
                         <div className="flex flex-col gap-2">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit shadow-xs border ${
-                            appl.Status === 'Eligible' ? 'bg-green-50 text-green-700 border-green-100' :
-                            appl.Status === 'Ineligible' ? 'bg-red-50 text-red-700 border-red-100' :
-                            'bg-blue-50 text-blue-700 border-blue-100'
-                          }`}>
-                            <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                               appl.Status === 'Eligible' ? 'bg-green-500' :
-                               appl.Status === 'Ineligible' ? 'bg-red-500' :
-                               'bg-blue-500'
-                            }`} />
-                            {translateConstant(t, appl.Status || 'Submitted')}
-                          </span>
+                          <div className="relative group/remark">
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit shadow-xs border transition-all ${
+                              appl.Status === 'Eligible' ? 'bg-green-50 text-green-700 border-green-100' :
+                              appl.Status === 'Ineligible' ? 'bg-red-50 text-red-700 border-red-100' :
+                              claim?.Status === 'Pending' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                              'bg-blue-50 text-blue-700 border-blue-100'
+                            }`}>
+                              <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                                 appl.Status === 'Eligible' ? 'bg-green-500' :
+                                 appl.Status === 'Ineligible' ? 'bg-red-500' :
+                                 claim?.Status === 'Pending' ? 'bg-amber-500' :
+                                 'bg-blue-500'
+                              }`} />
+                              {claim?.Status === 'Pending' ? t('dashboard.claim_pending') : translateConstant(t, appl.Status || 'Submitted')}
+                            </span>
+                            
+                            {appl.Remark && (
+                              <div className="absolute left-0 top-full mt-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded shadow-lg opacity-0 group-hover/remark:opacity-100 pointer-events-none transition-opacity z-10 leading-relaxed">
+                                <p className="font-bold border-b border-gray-700 mb-1 pb-1 text-gray-400 uppercase tracking-tighter">{t('dashboard.remarks')}</p>
+                                {appl.Remark}
+                                <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 rotate-45"></div>
+                              </div>
+                            )}
+                          </div>
                           
                           {appl.Remark && (
-                            <div className="p-2 bg-gray-50 rounded-lg border border-gray-100 text-[10px] text-gray-600 italic">
-                               <span className="font-bold text-gray-400 mr-1 not-italic">{t('dashboard.remarks')}:</span>
-                               {appl.Remark}
+                            <div className="flex items-center text-[10px] text-gray-400 italic">
+                               <Clock className="w-3 h-3 mr-1" />
+                               {t('dashboard.remark_on_hover', 'Hover for remarks')}
                             </div>
                           )}
                         </div>

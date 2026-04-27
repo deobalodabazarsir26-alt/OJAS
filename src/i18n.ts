@@ -265,7 +265,12 @@ const resources = {
         "click_upload": "Click to upload proof document",
         "cancel": "Cancel",
         "submitting": "Submitting...",
-        "claim_period_not_set": "Claim Period: Not yet scheduled"
+        "claim_period_not_set": "Claim Period: Not yet scheduled",
+        "claim_pending": "Claim Pending",
+        "claim_verified": "Claim Verified",
+        "claim_rejected": "Claim Rejected",
+        "submitted": "Submitted",
+        "remark_on_hover": "Hover for info"
       },
       "manage": {
         "title": "Management",
@@ -805,7 +810,12 @@ const resources = {
         "click_upload": "प्रमाण दस्तावेज़ अपलोड करने के लिए क्लिक करें",
         "cancel": "रद्द करें",
         "submitting": "प्रस्तुत किया जा रहा है...",
-        "claim_period_not_set": "दावा अवधि: अभी निर्धारित नहीं"
+        "claim_period_not_set": "दावा अवधि: अभी निर्धारित नहीं",
+        "claim_pending": "दावा लंबित है",
+        "claim_verified": "दावा सत्यापित",
+        "claim_rejected": "दावा अस्वीकृत",
+        "submitted": "जमा कर दिया गया",
+        "remark_on_hover": "विवरण के लिए माउस ले जाएं"
       },
       "manage": {
         "title": "प्रबंधन",
