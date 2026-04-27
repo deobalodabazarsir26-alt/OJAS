@@ -1382,8 +1382,8 @@ const ApplyJob: React.FC = () => {
                   {additionalInfo.Is_PWD === 'Yes' && (
                     <>
                       <div><span className="text-gray-500">{t('apply.pwd_percentage', 'PwD Percentage')}:</span> <span className="font-medium text-gray-900">{additionalInfo.PwD_Percentage}%</span></div>
-                      <div><span className="text-gray-500">{t('apply.pwd_state', 'PwD State')}:</span> <span className="font-medium text-gray-900">{translateConstant(t, additionalInfo.PwD_State || '')}</span></div>
-                      <div><span className="text-gray-500">{t('apply.pwd_district', 'PwD District')}:</span> <span className="font-medium text-gray-900">{translateConstant(t, additionalInfo.PwD_District || '')}</span></div>
+                      <div><span className="text-gray-500">{t('apply.pwd_state', 'PwD Cert. Issuing State')}:</span> <span className="font-medium text-gray-900">{translateConstant(t, additionalInfo.PwD_State || '')}</span></div>
+                      <div><span className="text-gray-500">{t('apply.pwd_district', 'PwD Cert. Issuing District')}:</span> <span className="font-medium text-gray-900">{translateConstant(t, additionalInfo.PwD_District || '')}</span></div>
                     </>
                   )}
                 </div>

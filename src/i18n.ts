@@ -227,6 +227,18 @@ const resources = {
         "save_credentials": "Your account has been created. Please note your login credentials.",
         "go_to_login": "Go to Login"
       },
+      "profile": {
+        "form": {
+          "name": "Candidate Name",
+          "father": "Father's Name",
+          "mother": "Mother's Name",
+          "gender": "Gender",
+          "dob": "Date of Birth",
+          "mobile": "Mobile Number",
+          "email": "Email Address",
+          "id_proof": "ID Proof"
+        }
+      },
       "dashboard": {
         "title": "My Dashboard",
         "subtitle": "Track your job applications and status",
@@ -437,8 +449,8 @@ const resources = {
         "caste_state": "Caste Issuing State",
         "caste_district": "Caste Issuing District",
         "is_pwd": "Is PwD?",
-        "pwd_state": "PwD State",
-        "pwd_district": "PwD District",
+        "pwd_state": "PwD Cert. Issuing State",
+        "pwd_district": "PwD Cert. Issuing District",
         "pwd_percentage": "PwD Percentage",
         "upload_domicile": "Domicile Certificate (JPG/PNG)",
         "upload_caste": "Caste Certificate (JPG/PNG)",
@@ -755,6 +767,18 @@ const resources = {
         "save_credentials": "आपका खाता बन गया है। कृपया अपनी लॉगिन साख नोट करें।",
         "go_to_login": "लॉगिन पर जाएं"
       },
+      "profile": {
+        "form": {
+          "name": "उम्मीदवार का नाम",
+          "father": "पिता का नाम",
+          "mother": "माता का नाम",
+          "gender": "लिंग",
+          "dob": "जन्म तिथि",
+          "mobile": "मोबाइल नंबर",
+          "email": "ईमेल पता",
+          "id_proof": "पहचान प्रमाण"
+        }
+      },
       "dashboard": {
         "title": "मेरा डैशबोर्ड",
         "subtitle": "अपने नौकरी के आवेदनों और स्थिति को ट्रैक करें",
@@ -965,8 +989,8 @@ const resources = {
         "caste_state": "जाति जारी करने वाला राज्य",
         "caste_district": "जाति जारी करने वाला जिला",
         "is_pwd": "क्या दिव्यांग हैं?",
-        "pwd_state": "दिव्यांगता राज्य",
-        "pwd_district": "दिव्यांगता जिला",
+        "pwd_state": "दिव्यांगता प्रमाण पत्र जारी करने वाला राज्य",
+        "pwd_district": "दिव्यांगता प्रमाण पत्र जारी करने वाला जिला",
         "pwd_percentage": "दिव्यांगता प्रतिशत",
         "upload_domicile": "मूल निवास प्रमाण पत्र (JPG/PNG)",
         "upload_caste": "जाति प्रमाण पत्र (JPG/PNG)",

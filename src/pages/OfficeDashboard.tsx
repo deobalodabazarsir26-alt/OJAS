@@ -589,8 +589,8 @@ const OfficeDashboard: React.FC = () => {
           'Caste State': addl?.Caste_State || 'N/A',
           'Caste District': addl?.Caste_District || 'N/A',
           'Is Person with Disability (PwD)?': addl?.Is_PWD || 'N/A',
-          'PwD State': addl?.PwD_State || 'N/A',
-          'PwD District': addl?.PwD_District || 'N/A',
+          'PwD Cert. Issuing State': addl?.PwD_State || 'N/A',
+          'PwD Cert. Issuing District': addl?.PwD_District || 'N/A',
           'PwD Percentage': addl?.PwD_Percentage || 'N/A',
 
           // Address Information
@@ -686,6 +686,15 @@ const OfficeDashboard: React.FC = () => {
     }
   };
 
+  const isReviewFacilityOpen = (adId: string) => {
+    const ad = ads.find(a => String(a.Adv_ID) === String(adId));
+    if (!ad) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endDate = new Date(ad.End_Date);
+    return today > endDate;
+  };
+
   const filteredApplications = applications.filter(a => {
     const isAdMatch = !selectedAdId || String(a.Adv_ID) === String(selectedAdId);
     const isPostMatch = !selectedPostId || String(a.Post_ID) === String(selectedPostId);
@@ -741,15 +750,6 @@ const OfficeDashboard: React.FC = () => {
       setIsGeneratingPDF(false);
       stopProgress();
     }
-  };
-
-  const isReviewFacilityOpen = (adId: string) => {
-    const ad = ads.find(a => String(a.Adv_ID) === String(adId));
-    if (!ad) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const endDate = new Date(ad.End_Date);
-    return today > endDate;
   };
 
   if (isLoading) return <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;

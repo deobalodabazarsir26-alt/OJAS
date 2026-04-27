@@ -337,8 +337,8 @@ const ManageAdvertisements: React.FC = () => {
           'Caste State': addl?.Caste_State || 'N/A',
           'Caste District': addl?.Caste_District || 'N/A',
           'Is Person with Disability (PwD)?': addl?.Is_PWD || 'N/A',
-          'PwD State': addl?.PwD_State || 'N/A',
-          'PwD District': addl?.PwD_District || 'N/A',
+          'PwD Cert. Issuing State': addl?.PwD_State || 'N/A',
+          'PwD Cert. Issuing District': addl?.PwD_District || 'N/A',
           'PwD Percentage': addl?.PwD_Percentage || 'N/A',
 
           // Address Information

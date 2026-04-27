@@ -21,9 +21,8 @@ export const pdfService = {
 
     const tc = (val: string | undefined) => {
       if (!val) return '';
-      const key = `constants.${val}`;
-      const translated = t(key);
-      return translated === key ? val : translated;
+      // We force English for constants in PDF to ensure PDF logic is consistent
+      return val;
     };
 
     onProgress('Processing images...', 40);
@@ -232,7 +231,7 @@ export const pdfService = {
           String(e.Employer_Name || ''),
           String(e.Post_Held || ''),
           String(formatDate(e.Start_Date)),
-          String(e.Currently_Working === 'Yes' ? (t('common.present', 'Present')) : formatDate(e.End_Date)),
+          String(e.Currently_Working === 'Yes' ? 'Present' : formatDate(e.End_Date)),
           tc(e.Employment_Type)
         ]),
         theme: 'striped',
