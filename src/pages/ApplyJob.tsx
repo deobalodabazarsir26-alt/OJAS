@@ -84,6 +84,7 @@ const ApplyJob: React.FC = () => {
 
   const [qualifications, setQualifications] = useState<Partial<QualificationInfo>[]>([
     { 
+      Qual_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       Qualification_Type: 'High School (10th) Certificate',
       Course_Name: '',
       Board_Name: '',
@@ -430,11 +431,24 @@ const ApplyJob: React.FC = () => {
 
       if (!applId) throw new Error('Application ID missing');
       
-      const candidateName = applicantProfile?.Candidate_Name || user.User_Name;
+      const candidateName = (profile as any)?.Candidate_Name || user.User_Name;
 
       // Update or Insert Additional Info
       updateProgress(50, `${isEditMode ? 'Updating' : 'Saving'} additional information...`);
+      
+      // For 1:1 tables in Cloud Database, it's safer to delete by Appl_ID and re-insert 
+      // if using unique IDs, or just update if keys are stable.
+      // But adding Addl_ID now, so we'll handle it.
+      let existingAddl: any = null;
+      if (isEditMode) {
+        const allAddl = await sheetService.getAll<any>('Additional_Info');
+        existingAddl = allAddl.find(a => String(a.Appl_ID) === String(applId));
+      }
+
+      const nextAddlId = existingAddl?.Addl_ID || String(await sheetService.getNextId('Additional_Info', 'Addl_ID'));
+
       const addlData = { 
+        Addl_ID: nextAddlId,
         Appl_ID: applId, 
         User_ID: user.User_ID, 
         Candidate_Name: candidateName,
@@ -455,15 +469,27 @@ const ApplyJob: React.FC = () => {
         T_STMP_UPD: timestamp,
       };
 
-      if (isEditMode) {
-        await sheetService.update('Additional_Info', 'Appl_ID', applId, addlData);
+      if (isEditMode && existingAddl) {
+        await sheetService.update('Additional_Info', 'Addl_ID', nextAddlId, addlData);
       } else {
+        // If it somehow existed but we didn't find it by ID, or if it's new
+        if (isEditMode) await sheetService.delete('Additional_Info', 'Appl_ID', applId);
         await sheetService.insert('Additional_Info', { ...addlData, T_STMP_ADD: timestamp });
       }
       
       // Update or Insert Address Info
       updateProgress(60, `${isEditMode ? 'Updating' : 'Saving'} address information...`);
+      
+      let existingAddr: any = null;
+      if (isEditMode) {
+        const allAddr = await sheetService.getAll<any>('Address_Info');
+        existingAddr = allAddr.find(a => String(a.Appl_ID) === String(applId));
+      }
+
+      const nextAddrId = existingAddr?.Addr_ID || String(await sheetService.getNextId('Address_Info', 'Addr_ID'));
+
       const addrData = { 
+        Addr_ID: nextAddrId,
         Appl_ID: applId, 
         User_ID: user.User_ID, 
         Candidate_Name: candidateName,
@@ -481,58 +507,105 @@ const ApplyJob: React.FC = () => {
         T_STMP_UPD: timestamp,
       };
 
-      if (isEditMode) {
-        await sheetService.update('Address_Info', 'Appl_ID', applId, addrData);
+      if (isEditMode && existingAddr) {
+        await sheetService.update('Address_Info', 'Addr_ID', nextAddrId, addrData);
       } else {
+        if (isEditMode) await sheetService.delete('Address_Info', 'Appl_ID', applId);
         await sheetService.insert('Address_Info', { ...addrData, T_STMP_ADD: timestamp });
       }
 
-      // Handle Qualifications - Wipe all existing for this Appl_ID and Re-insert
+      // Handle Qualifications
       updateProgress(70, `${isEditMode ? 'Updating' : 'Saving'} qualifications...`);
-      if (isEditMode) {
-        // Since delete might only remove one row at a time in Apps Script, 
-        // we loop to ensure all are cleared.
-        const existing = await sheetService.getAll<QualificationInfo>('Qualification_Info');
-        const countToClear = existing.filter(q => String(q.Appl_ID) === String(applId)).length;
-        for (let i = 0; i < countToClear; i++) {
-          await sheetService.delete('Qualification_Info', 'Appl_ID', String(applId));
-        }
+      
+      const allQuals = await sheetService.getAll<QualificationInfo>('Qualification_Info');
+      const existingQualsInDb = allQuals.filter(q => String(q.Appl_ID) === String(applId));
+      
+      // 1. Identify and delete records removed from the form
+      const qualIdsInForm = qualifications
+        .map(q => q.Qual_ID)
+        .filter(id => id && !String(id).startsWith('temp_'));
+      
+      const qualsToDelete = existingQualsInDb.filter(q => !qualIdsInForm.includes(q.Qual_ID));
+      for (const q of qualsToDelete) {
+        await sheetService.delete('Qualification_Info', 'Qual_ID', q.Qual_ID);
       }
       
+      // 2. Insert new or Update existing
+      let nextQualIdNum = await sheetService.getNextId('Qualification_Info', 'Qual_ID');
+
       for (let i = 0; i < qualifications.length; i++) {
         const q = qualifications[i];
-        updateProgress(70 + (i / qualifications.length) * 15, `Saving qualification: ${q.Qualification_Type}`);
-        await sheetService.insert('Qualification_Info', { 
-          ...q, 
-          Appl_ID: applId, 
-          User_ID: user.User_ID, 
-          Candidate_Name: candidateName,
-          T_STMP_ADD: timestamp,
-          T_STMP_UPD: timestamp,
-        });
-      }
+        const isNew = !q.Qual_ID || String(q.Qual_ID).startsWith('temp_');
+        
+        updateProgress(70 + (i / qualifications.length) * 15, `${isNew ? 'Inserting' : 'Updating'} qualification: ${q.Qualification_Type}`);
 
-      // Handle Experience - Wipe all existing for this Appl_ID and Re-insert
-      updateProgress(85, `${isEditMode ? 'Updating' : 'Saving'} experience details...`);
-      if (isEditMode) {
-        const existing = await sheetService.getAll<ExperienceInfo>('Experience_Info');
-        const countToClear = existing.filter(e => String(e.Appl_ID) === String(applId)).length;
-        for (let i = 0; i < countToClear; i++) {
-          await sheetService.delete('Experience_Info', 'Appl_ID', String(applId));
+        if (isNew) {
+          const finalQualId = String(nextQualIdNum++);
+          await sheetService.insert('Qualification_Info', { 
+            ...q, 
+            Qual_ID: finalQualId,
+            Appl_ID: applId, 
+            User_ID: user.User_ID, 
+            Candidate_Name: candidateName,
+            T_STMP_ADD: timestamp,
+            T_STMP_UPD: timestamp,
+          });
+        } else {
+          await sheetService.update('Qualification_Info', 'Qual_ID', q.Qual_ID!, {
+            ...q,
+            Appl_ID: applId,
+            User_ID: user.User_ID,
+            Candidate_Name: candidateName,
+            T_STMP_UPD: timestamp,
+          });
         }
       }
+
+      // Handle Experience
+      updateProgress(85, `${isEditMode ? 'Updating' : 'Saving'} experience details...`);
+      
+      const allExps = await sheetService.getAll<ExperienceInfo>('Experience_Info');
+      const existingExpsInDb = allExps.filter(e => String(e.Appl_ID) === String(applId));
+
+      // 1. Identify and delete records removed from the form
+      const expIdsInForm = experiences
+        .map(e => e.Exp_ID)
+        .filter(id => id && !String(id).startsWith('temp_'));
+      
+      const expsToDelete = existingExpsInDb.filter(e => !expIdsInForm.includes(e.Exp_ID));
+      for (const e of expsToDelete) {
+        await sheetService.delete('Experience_Info', 'Exp_ID', e.Exp_ID);
+      }
+
+      // 2. Insert new or Update existing
+      let nextExpIdNum = await sheetService.getNextId('Experience_Info', 'Exp_ID');
 
       for (let i = 0; i < experiences.length; i++) {
         const e = experiences[i];
-        updateProgress(85 + (i / experiences.length) * 10, `Saving experience: ${e.Employer_Name}`);
-        await sheetService.insert('Experience_Info', { 
-          ...e, 
-          Appl_ID: applId, 
-          User_ID: user.User_ID, 
-          Candidate_Name: candidateName,
-          T_STMP_ADD: timestamp,
-          T_STMP_UPD: timestamp,
-        });
+        const isNew = !e.Exp_ID || String(e.Exp_ID).startsWith('temp_');
+
+        updateProgress(85 + (i / experiences.length) * 10, `${isNew ? 'Inserting' : 'Updating'} experience: ${e.Employer_Name}`);
+
+        if (isNew) {
+          const finalExpId = String(nextExpIdNum++);
+          await sheetService.insert('Experience_Info', { 
+            ...e, 
+            Exp_ID: finalExpId,
+            Appl_ID: applId, 
+            User_ID: user.User_ID, 
+            Candidate_Name: candidateName,
+            T_STMP_ADD: timestamp,
+            T_STMP_UPD: timestamp,
+          });
+        } else {
+          await sheetService.update('Experience_Info', 'Exp_ID', e.Exp_ID!, {
+            ...e,
+            Appl_ID: applId,
+            User_ID: user.User_ID,
+            Candidate_Name: candidateName,
+            T_STMP_UPD: timestamp,
+          });
+        }
       }
 
       updateProgress(100, `${isEditMode ? 'Application updated' : 'Application submitted'} successfully!`);
@@ -1153,6 +1226,7 @@ const ApplyJob: React.FC = () => {
             ))}
             <button
               onClick={() => setQualifications([...qualifications, { 
+                Qual_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
                 Qualification_Type: 'Graduation Certificate',
                 Course_Name: '',
                 Board_Name: '',
@@ -1303,6 +1377,7 @@ const ApplyJob: React.FC = () => {
             )}
             <button
               onClick={() => setExperiences([...experiences, { 
+                Exp_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
                 Currently_Working: 'No',
                 Employer_Type: '',
                 Employment_Type: '',

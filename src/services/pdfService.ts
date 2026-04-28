@@ -73,92 +73,79 @@ export const pdfService = {
     
     const htmlContent = `
       <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
         .pdf-content-wrapper {
           font-family: 'Noto Sans Devanagari', 'Poppins', 'Inter', 'Helvetica', Arial, sans-serif;
-          line-height: 1.5;
+          line-height: 1.4;
           color: #333;
           background-color: #ffffff;
-          width: 720px;
+          width: 760px;
           margin: 0;
           padding: 0;
+          box-sizing: border-box;
         }
         .pdf-page {
           margin: 0;
-          padding: 2.5rem;
+          padding: 2rem;
           background-color: #ffffff !important;
-          position: relative;
           width: 100%;
+          min-height: 1050px;
+          box-sizing: border-box;
         }
         * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        img { display: block; max-width: 100%; height: auto; page-break-inside: avoid; }
+        img { display: block; max-width: 100%; height: auto; }
+        
         .header {
           text-align: center;
           border-bottom: 2px solid #1e3a8a;
-          padding-bottom: 15px;
-          margin-bottom: 20px;
+          padding-bottom: 12px;
+          margin-bottom: 15px;
         }
-        .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; color: #1e3a8a; font-weight: 700; }
-        .header h2 { margin: 5px 0; font-size: 16px; color: #4b5563; font-weight: 600; }
-        .header p { margin: 5px 0; font-size: 13px; font-weight: bold; }
+        .header h1 { margin: 0; font-size: 20px; text-transform: uppercase; color: #1e3a8a; font-weight: 700; }
+        .header h2 { margin: 4px 0; font-size: 15px; color: #4b5563; font-weight: 600; }
+        .header p { margin: 4px 0; font-size: 12px; font-weight: bold; }
         
-        .section { margin-bottom: 20px; clear: both; page-break-inside: avoid; }
+        .section { margin-bottom: 15px; clear: both; page-break-inside: avoid; }
         .section-title {
           background: #f1f5f9;
-          padding: 8px 12px;
+          padding: 6px 10px;
           font-weight: bold;
-          font-size: 15px;
-          border-left: 5px solid #1e3a8a;
-          margin-bottom: 12px;
+          font-size: 14px;
+          border-left: 4px solid #1e3a8a;
+          margin-bottom: 10px;
           text-transform: uppercase;
           color: #0f172a;
         }
         
-        .field { margin-bottom: 8px; font-size: 13px; clear: both; }
-        .label { font-weight: bold; color: #475569; display: inline-block; width: 150px; float: left; }
-        .value { display: block; margin-left: 160px; word-break: break-word; }
+        .field { margin-bottom: 6px; font-size: 12px; display: flex; align-items: flex-start; }
+        .label { font-weight: bold; color: #475569; width: 180px; display: inline-block; flex-shrink: 0; }
+        .value { color: #1e293b; word-break: break-all; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; clear: both; page-break-inside: auto; }
-        table tr { page-break-inside: avoid; page-break-after: auto; }
-        table th, table td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 11px; clear: both; }
+        table th, table td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
         table th { background: #f8fafc; font-weight: bold; color: #0f172a; }
         
-        .footer-section {
-          page-break-inside: avoid;
-        }
-        .photo-sign-container {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 20px;
-          gap: 20px;
-        }
-        .photo-box, .sign-box {
+        .photo-box {
           text-align: center;
-          width: 140px;
-          page-break-inside: avoid;
+          width: 130px;
+          flex-shrink: 0;
         }
         .photo-img {
-          width: 120px;
-          height: 150px;
+          width: 110px;
+          height: 140px;
           border: 1px solid #94a3b8;
           object-fit: cover;
-          margin-bottom: 5px;
-          background: #f8fafc;
-        }
-        .sign-img {
-          width: 140px;
-          height: 45px;
-          border: 1px solid #94a3b8;
-          object-fit: contain;
-          margin-bottom: 5px;
+          margin-bottom: 4px;
           background: #f8fafc;
         }
         
         .declaration {
-          margin-top: 25px;
-          font-size: 12px;
+          margin-top: 15px;
+          font-size: 11px;
           font-style: italic;
           border: 1px solid #e2e8f0;
-          padding: 12px;
+          padding: 10px;
           background: #f8fafc;
           border-radius: 4px;
           color: #334155;
@@ -167,18 +154,24 @@ export const pdfService = {
 
         .cert-page {
           page-break-before: always;
-          margin: 0;
           padding: 2rem;
           text-align: center;
           background: white;
+          width: 100%;
+          min-height: 1050px;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
         }
         .cert-img {
           max-width: 100%;
-          max-height: 900px;
-          border: 1px dashed #94a3b8;
-          margin-top: 20px;
+          max-height: 850px;
+          border: 1px solid #e2e8f0;
+          margin-top: 15px;
           object-fit: contain;
           background: #f8fafc;
+          display: block;
         }
       </style>
       <div class="pdf-content-wrapper">
@@ -187,7 +180,7 @@ export const pdfService = {
             <h1>${t('nav.system_name')}</h1>
             <h2>${adTitle}</h2>
             <p>${t('office.table.post')}: ${postName}</p>
-            <div style="margin-top: 10px; font-size: 12px; color: #475569; font-weight: 500;">
+            <div style="margin-top: 8px; font-size: 11px; color: #475569; font-weight: 500;">
               ${t('dashboard.appl_id')}: ${appl.Appl_ID} | ${t('common.date')}: ${formatDate(appl.Apply_Date)}
             </div>
           </div>
@@ -200,13 +193,13 @@ export const pdfService = {
                 <div class="field"><span class="label">${t('signup.father_name')}:</span> <span class="value">${applicantProfile?.Father_Name || t('manage.na')}</span></div>
                 <div class="field"><span class="label">${t('signup.mother_name')}:</span> <span class="value">${applicantProfile?.Mother_Name || t('manage.na')}</span></div>
                 <div class="field"><span class="label">${t('profile.form.dob')}:</span> <span class="value">${formatDate(applicantProfile?.DOB)}</span></div>
-                <div class="field"><span class="label">${t('profile.form.gender')}:</span> <span class="value">${applicantProfile?.Gender || t('manage.na')}</span></div>
-                <div class="field"><span class="label">${t('profile.form.category')}:</span> <span class="value">${additionalInfo?.Caste_Category || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('profile.form.gender')}:</span> <span class="value">${applicantProfile?.Gender ? t(`constants.${applicantProfile.Gender}`) : t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('profile.form.category')}:</span> <span class="value">${additionalInfo?.Caste_Category ? t(`constants.${additionalInfo.Caste_Category}`) : t('manage.na')}</span></div>
                 <div class="field">
                   <span class="label">${t('apply.domicile_cg')}:</span> 
                   <span class="value">
                     ${additionalInfo?.Is_CG === 'Yes' ? t('constants.Yes') : t('constants.No')} 
-                    (${additionalInfo?.Is_CG === 'Yes' ? additionalInfo?.Domicile_District : additionalInfo?.Domicile_State || t('manage.na')})
+                    (${additionalInfo?.Is_CG === 'Yes' ? (additionalInfo?.Domicile_District || t('manage.na')) : (additionalInfo?.Domicile_State || t('manage.na'))})
                   </span>
                 </div>
                 <div class="field">
@@ -220,7 +213,7 @@ export const pdfService = {
                 <div class="field"><span class="label">${t('profile.form.email')}:</span> <span class="value">${applicantProfile?.Email_ID || t('manage.na')}</span></div>
               </div>
               <div class="photo-box">
-                ${photoBase64 ? `<img src="${photoBase64}" class="photo-img" />` : `<div class="photo-img" style="display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8;">${t('office.review_modal.photo')}</div>`}
+                ${photoBase64 ? `<img src="${photoBase64}" class="photo-img" />` : `<div class="photo-img" style="display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1;">${t('office.review_modal.photo')}</div>`}
               </div>
             </div>
           </div>
@@ -228,17 +221,17 @@ export const pdfService = {
           <div class="section">
             <div class="section-title">${t('office.review_modal.addr_details')}</div>
             <div style="display: flex; gap: 20px;">
-              <div class="field" style="flex: 1;">
-                <span class="label">${t('address.current')}:</span>
-                <div class="value">
+              <div class="field" style="flex: 1; flex-direction: column;">
+                <span class="label" style="width: 100%; border-bottom: 1px solid #e2e8f0; margin-bottom: 4px;">${t('address.current')}</span>
+                <span class="value" style="margin-left: 0;">
                   ${addressInfo?.Curr_Address || t('manage.na')}, ${addressInfo?.Curr_District || ''}, ${addressInfo?.Curr_State || ''} - ${addressInfo?.Curr_Pincode || ''}
-                </div>
+                </span>
               </div>
-              <div class="field" style="flex: 1;">
-                <span class="label">${t('address.permanent')}:</span>
-                <div class="value">
+              <div class="field" style="flex: 1; flex-direction: column;">
+                <span class="label" style="width: 100%; border-bottom: 1px solid #e2e8f0; margin-bottom: 4px;">${t('address.permanent')}</span>
+                <span class="value" style="margin-left: 0;">
                   ${addressInfo?.Perm_Address || t('manage.na')}, ${addressInfo?.Perm_District || ''}, ${addressInfo?.Perm_State || ''} - ${addressInfo?.Perm_Pincode || ''}
-                </div>
+                </span>
               </div>
             </div>
           </div>
@@ -261,7 +254,7 @@ export const pdfService = {
                     <td>${q.Course_Name}</td>
                     <td>${q.Board_Name}</td>
                     <td>${q.Pass_Year}</td>
-                    <td>${q.Qualification_Type}</td>
+                    <td>${q.Qualification_Type ? t(`constants.${q.Qualification_Type}`) : ''}</td>
                     <td>${q.Percentage}%</td>
                   </tr>
                 `).join('') : `<tr><td colspan="5" style="text-align:center;">${t('common.no_data')}</td></tr>`}
@@ -295,29 +288,28 @@ export const pdfService = {
 
           <div class="footer-section">
             <div class="declaration">
-              <p style="margin-top: 0;"><strong>${t('apply.declaration_title')}:</strong></p>
+              <p style="margin-top: 0; font-weight: bold; color: #1e3a8a;">${t('apply.declaration_title')}:</p>
               <p style="margin-bottom: 0;">${t('apply.declaration_text')}</p>
             </div>
 
-            <div class="photo-sign-container">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 20px;">
               <div>
-                <p style="font-size: 13px; margin: 4px 0;">${t('common.date')}: ${formatDate(appl.Apply_Date)}</p>
-                <p style="font-size: 13px; margin: 4px 0;">${t('common.place')}: __________________</p>
+                <p style="font-size: 11px; margin: 2px 0;">${t('common.date')}: ${formatDate(new Date())}</p>
+                <p style="font-size: 11px; margin: 2px 0;">${t('common.place')}: __________________</p>
               </div>
-              <div class="sign-box">
-                ${signBase64 ? `<img src="${signBase64}" class="sign-img" />` : `<div class="sign-img" style="display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8;">${t('office.review_modal.sign')}</div>`}
-                <p style="font-weight: bold; font-size: 14px; margin-top: 8px;">${applicantProfile?.Candidate_Name || ''}</p>
+              <div style="text-align: center; min-width: 150px;">
+                ${signBase64 ? `<img src="${signBase64}" style="width: 120px; height: 40px; object-fit: contain; margin: 0 auto 5px;" />` : `<div style="height: 40px; border-bottom: 1px dashed #94a3b8; width: 120px; margin: 0 auto 5px;"></div>`}
+                <p style="font-weight: bold; font-size: 12px;">(${applicantProfile?.Candidate_Name})</p>
+                <p style="font-size: 10px; color: #64748b;">${t('signup.applicant_signature')}</p>
               </div>
             </div>
           </div>
         </div>
 
-        ${includeCertificates && certificateImages.length > 0 ? certificateImages.map(cert => `
+        ${certificateImages.length > 0 ? certificateImages.map(cert => `
           <div class="cert-page">
-            <div class="section-title">${cert.label}</div>
-            <div style="display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
-              <img src="${cert.base64}" class="cert-img" />
-            </div>
+            <div class="section-title" style="width: 100%; text-align: left;">${cert.label}</div>
+            <img src="${cert.base64}" class="cert-img" />
           </div>
         `).join('') : ''}
       </div>

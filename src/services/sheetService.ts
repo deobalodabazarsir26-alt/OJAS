@@ -1,6 +1,6 @@
 // This service will handle data persistence.
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyXi2PjhPtBjqa6791WGbjV6bd1MIjr3ngl04yJ-6JUfld0XMJDAA1BVIrIKacnlaEd/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQY1rMNpLD5UeyXX8GDoXtbR0nzxwxZFPsf-IA0l3XgPz06JCVNNJEokmu7mn-EHH_/exec';
 
 const STORAGE_KEYS = {
   User: 'ojas_users',
@@ -178,8 +178,13 @@ export const sheetService = {
   async getAll<T>(sheetName: keyof typeof STORAGE_KEYS, forceLocal: boolean = false): Promise<T[]> {
     if (!forceLocal && APPS_SCRIPT_URL && isAppsScriptAvailable) {
       try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?sheetName=${sheetName}`);
-        if (!response.ok) throw new Error('Network response was not ok');
+        const response = await fetch(`${APPS_SCRIPT_URL}?sheetName=${sheetName}`, {
+          redirect: 'follow'
+        });
+        if (!response.ok) {
+          console.error(`Apps Script Fetch Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
+          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        }
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) return data;
         if (Array.isArray(data) && data.length === 0 && sheetName !== 'Global_Constants') return [];
@@ -209,8 +214,12 @@ export const sheetService = {
           headers: {
             'Content-Type': 'text/plain;charset=utf-8',
           },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'insert', sheetName, payload: dataWithTimestamp }),
         });
+        if (!response.ok) {
+          console.error(`Apps Script Insert Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
+        }
         const result = await response.text();
         if (result.startsWith('Error')) {
           if (result.includes('Sheet not found')) {
@@ -270,8 +279,12 @@ export const sheetService = {
           headers: {
             'Content-Type': 'text/plain;charset=utf-8',
           },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'bulkInsert', sheetName, payloads: dataWithTimestamp, clearFirst }),
         });
+        if (!response.ok) {
+          console.error(`Apps Script Bulk Insert Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
+        }
         const result = await response.text();
         if (result.startsWith('Error')) {
           console.error(`Apps Script Bulk Insert Error for ${sheetName}:`, result);
@@ -305,8 +318,12 @@ export const sheetService = {
           headers: {
             'Content-Type': 'text/plain;charset=utf-8',
           },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'update', sheetName, idColumn, idValue, payload: dataWithTimestamp }),
         });
+        if (!response.ok) {
+          console.error(`Apps Script Update Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
+        }
         const result = await response.text();
         console.log(`Global Database update result for ${sheetName}:`, result);
         if (result.startsWith('Error')) {
@@ -359,8 +376,12 @@ export const sheetService = {
           headers: {
             'Content-Type': 'text/plain;charset=utf-8',
           },
+          redirect: 'follow',
           body: JSON.stringify({ action: 'delete', sheetName, idColumn, idValue }),
         });
+        if (!response.ok) {
+          console.error(`Apps Script Delete Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
+        }
         const result = await response.text();
         console.log(`Delete response for ${sheetName}:`, result);
         if (result.startsWith('Error')) {

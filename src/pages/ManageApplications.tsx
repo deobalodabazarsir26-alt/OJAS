@@ -128,43 +128,22 @@ const ManageApplications: React.FC = () => {
         }
       }
 
-      // 2. Delete related table records
+      // Delete related table records
       updateProgress(60, t('manage_applications.progress_secondary', 'Removing application profile details...'));
-      console.log('Deleting from secondary tables sequentially...');
+      console.log('Deleting from secondary tables precisely...');
       
-      // Get all related records first to know how many entries to delete for 1:N relations
-      const [allQuals, allExps] = await Promise.all([
-        sheetService.getAll<QualificationInfo>('Qualification_Info'),
-        sheetService.getAll<ExperienceInfo>('Experience_Info')
-      ]);
-      
-      const qualCount = allQuals.filter(q => String(q.Appl_ID) === String(appl.Appl_ID)).length;
-      const expCount = allExps.filter(e => String(e.Appl_ID) === String(appl.Appl_ID)).length;
-      const claimCount = applClaims.length;
+      // Delete Qualifications by Appl_ID
+      await sheetService.delete('Qualification_Info', 'Appl_ID', appl.Appl_ID);
 
-      const secondaryTables = [
-        { name: 'Additional_Info', count: 1 },
-        { name: 'Address_Info', count: 1 },
-        { name: 'Qualification_Info', count: qualCount },
-        { name: 'Experience_Info', count: expCount },
-        { name: 'Claim', count: claimCount }
-      ] as const;
+      // Delete Experiences by Appl_ID
+      await sheetService.delete('Experience_Info', 'Appl_ID', appl.Appl_ID);
 
-      let tableCount = 0;
-      for (const table of secondaryTables) {
-        tableCount++;
-        updateProgress(60 + (tableCount / secondaryTables.length * 20), t('manage_applications.progress_table', 'Removing data from {{table}}...', { table: table.name }));
-        
-        // Call delete for each found row (this handles the 1st-match-delete limitation of the current Apps Script)
-        for (let i = 0; i < table.count; i++) {
-          try {
-            console.log(`Deleting ${table.name} (${i+1}/${table.count}) for ${appl.Appl_ID}`);
-            await sheetService.delete(table.name as any, 'Appl_ID', appl.Appl_ID);
-          } catch (e) {
-            console.warn(`Non-critical delete failure for ${table.name}:`, e);
-          }
-        }
-      }
+      // Delete Claims by Appl_ID
+      await sheetService.delete('Claim', 'Appl_ID', appl.Appl_ID);
+
+      // Delete Additional & Address Info
+      await sheetService.delete('Additional_Info', 'Appl_ID', appl.Appl_ID);
+      await sheetService.delete('Address_Info', 'Appl_ID', appl.Appl_ID);
 
       // 3. Delete Main Application Record LAST
       updateProgress(90, t('manage_applications.progress_finalizing', 'Finalizing application removal...'));

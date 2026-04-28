@@ -108,6 +108,7 @@ export interface Application {
 }
 
 export interface AdditionalInfo {
+  Addl_ID: string;
   Appl_ID: string;
   User_ID: string;
   Candidate_Name: string;
@@ -130,6 +131,7 @@ export interface AdditionalInfo {
 }
 
 export interface AddressInfo {
+  Addr_ID: string;
   Appl_ID: string;
   User_ID: string;
   Candidate_Name: string;
@@ -149,6 +151,7 @@ export interface AddressInfo {
 }
 
 export interface QualificationInfo {
+  Qual_ID: string;
   Appl_ID: string;
   User_ID: string;
   Candidate_Name: string;
@@ -167,6 +170,7 @@ export interface QualificationInfo {
 }
 
 export interface ExperienceInfo {
+  Exp_ID: string;
   Appl_ID: string;
   User_ID: string;
   Candidate_Name: string;
