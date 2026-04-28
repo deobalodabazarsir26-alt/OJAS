@@ -215,7 +215,7 @@ const AdDetails: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-0.5">{t('ad_details.office_contact.incharge')}</p>
-                    <p className="text-sm font-bold text-gray-900">{officeUser?.Officer_Name || 'Officer-in-Charge'}</p>
+                    <p className="text-sm font-bold text-gray-900">{officeUser?.Officer_Name || t('common.officer_in_charge')}</p>
                     {officeUser?.Designation && <p className="text-xs text-gray-600 mt-0.5 italic">{officeUser.Designation}</p>}
                   </div>
                 </div>
@@ -226,7 +226,7 @@ const AdDetails: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-0.5">{t('ad_details.office_contact.mobile')}</p>
-                    <a href={`tel:${officeUser?.Mobile}`} className="text-sm font-bold text-blue-700 hover:underline">{officeUser?.Mobile || 'N/A'}</a>
+                    <a href={`tel:${officeUser?.Mobile}`} className="text-sm font-bold text-blue-700 hover:underline">{officeUser?.Mobile || t('common.na')}</a>
                   </div>
                 </div>
                 
@@ -236,7 +236,7 @@ const AdDetails: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-xs font-semibold text-blue-800 uppercase tracking-wider mb-0.5">{t('ad_details.office_contact.email')}</p>
-                    <a href={`mailto:${officeUser?.Email_ID}`} className="text-sm font-bold text-blue-700 hover:underline">{officeUser?.Email_ID || 'N/A'}</a>
+                    <a href={`mailto:${officeUser?.Email_ID}`} className="text-sm font-bold text-blue-700 hover:underline">{officeUser?.Email_ID || t('common.na')}</a>
                   </div>
                 </div>
               </div>

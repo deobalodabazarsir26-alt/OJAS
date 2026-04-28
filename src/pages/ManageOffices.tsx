@@ -329,7 +329,7 @@ const ManageOffices: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
               <tr>
-                <th className="px-6 py-3 w-16 text-center">S.No.</th>
+                <th className="px-6 py-3 w-16 text-center">{t('common.sno')}</th>
                 <th className="px-6 py-3">{t('manage.office_name')}</th>
                 <th className="px-6 py-3">{t('admin.stats.depts')}</th>
                 <th className="px-6 py-3">{t('manage.officer_in_charge')}</th>

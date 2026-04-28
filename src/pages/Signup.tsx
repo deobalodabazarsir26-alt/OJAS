@@ -386,7 +386,7 @@ const Signup: React.FC = () => {
                             </div>
                             <div className="flex flex-col truncate">
                               <span className="text-sm font-medium text-gray-700 truncate">{fileNames.Photo_URL || t('signup.photo_jpg', 'Upload Photo')}</span>
-                              <span className="text-xs text-gray-500">Max size 500KB (JPG)</span>
+                              <span className="text-xs text-gray-500">{t('signup.max_size', { size: '500KB' })}</span>
                             </div>
                           </div>
                           {filesLoading.Photo_URL ? (
@@ -421,7 +421,7 @@ const Signup: React.FC = () => {
                             </div>
                             <div className="flex flex-col truncate">
                               <span className="text-sm font-medium text-gray-700 truncate">{fileNames.Signature_URL || t('signup.sign_jpg', 'Upload Signature')}</span>
-                              <span className="text-xs text-gray-500">Max size 500KB (JPG)</span>
+                              <span className="text-xs text-gray-500">{t('signup.max_size', { size: '500KB' })}</span>
                             </div>
                           </div>
                           {filesLoading.Signature_URL ? (
@@ -484,7 +484,7 @@ const Signup: React.FC = () => {
                 disabled={isLoading}
                 className="w-full bg-blue-600 text-white py-3 rounded-md font-bold hover:bg-blue-700 transition-colors"
               >
-                {isLoading ? t('signup.verifying', 'Verifying...') : t('signup.verify_create')}
+                {isLoading ? t('signup.verifying') : t('signup.verify_create')}
               </button>
             </form>
           </motion.div>
@@ -509,7 +509,7 @@ const Signup: React.FC = () => {
                 <span className="font-mono font-bold">{generatedCredentials.password}</span>
               </div>
             </div>
-            <p className="text-xs text-red-500 mb-6 italic">Please save these credentials for future use.</p>
+            <p className="text-xs text-red-500 mb-6 italic">{t('signup.save_note')}</p>
             <button
               onClick={() => navigate('/login')}
               className="w-full bg-blue-600 text-white py-3 rounded-md font-bold hover:bg-blue-700 transition-colors"

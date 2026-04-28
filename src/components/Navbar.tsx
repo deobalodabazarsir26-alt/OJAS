@@ -85,7 +85,7 @@ const Navbar: React.FC = () => {
                 {isUserDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-1 origin-top-right animate-in fade-in slide-in-from-top-2">
                     <div className="px-4 py-3 border-b border-gray-50 mb-1">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{user.User_Type}</p>
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-widest mb-1">{t('manage.role_' + user.User_Type)}</p>
                       <p className="text-sm font-bold text-gray-900 truncate">{user.User_Name}</p>
                     </div>
                     <Link
@@ -156,7 +156,7 @@ const Navbar: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900">{user.User_Name}</p>
-                      <p className="text-xs font-medium text-gray-500 uppercase">{user.User_Type}</p>
+                      <p className="text-xs font-medium text-gray-500 uppercase">{t('manage.role_' + user.User_Type)}</p>
                     </div>
                   </div>
                 </div>

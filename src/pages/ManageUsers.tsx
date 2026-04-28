@@ -160,7 +160,7 @@ const ManageUsers: React.FC = () => {
           <table className="w-full text-left font-hindi-support">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
-                <th className="px-6 py-4 font-semibold uppercase text-center w-16">S.No.</th>
+                <th className="px-6 py-4 font-semibold uppercase text-center w-16">{t('common.sno')}</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('manage.username')}</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('manage.category')}</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('dashboard.status')}</th>

@@ -192,7 +192,7 @@ const ManageDepartments: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
               <tr>
-                <th className="px-6 py-3">S.No.</th>
+                <th className="px-6 py-3">{t('common.sno')}</th>
                 <th className="px-6 py-3">{t('admin.dept_name')}</th>
                 <th className="px-6 py-3">{t('signup.type')}</th>
                 <th className="px-6 py-3 text-right">{t('dashboard.actions')}</th>
@@ -300,7 +300,7 @@ const ManageDepartments: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">{t('admin.dept_type')}</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('signup.type')}</label>
                   <select
                     value={deptForm.Dept_Type}
                     onChange={e => setDeptForm({ ...deptForm, Dept_Type: e.target.value })}

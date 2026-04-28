@@ -55,7 +55,11 @@ const resources = {
         "no_data": "No data available",
         "print_now": "Print Now",
         "date": "Date",
-        "place": "Place"
+        "place": "Place",
+        "sno": "S.No.",
+        "na": "N/A",
+        "officer_in_charge": "Officer-in-Charge",
+        "unknown": "Unknown"
       },
       "constants": {
         "Male": "Male",
@@ -218,6 +222,7 @@ const resources = {
         "id_number": "ID Number",
         "upload_id_proof": "Upload ID Proof (JPG/PNG)",
         "contact_info": "Contact Information",
+        "type": "Type",
         "email": "Email ID",
         "mobile": "Mobile Number",
         "applicant_photo": "Applicant Photo",
@@ -230,6 +235,9 @@ const resources = {
         "otp_sent_to": "We've sent a verification code to {{email}}",
         "enter_otp": "Enter 6-digit OTP",
         "verify_create": "Verify & Create Account",
+        "verifying": "Verifying...",
+        "max_size": "Max size {{size}} (JPG)",
+        "save_note": "Please save these credentials for future use.",
         "success": "Registration Successful!",
         "save_credentials": "Your account has been created. Please note your login credentials.",
         "go_to_login": "Go to Login"
@@ -721,7 +729,11 @@ const resources = {
         "no_data": "कोई डेटा नहीं",
         "print_now": "अभी प्रिंट करें",
         "date": "दिनांक",
-        "place": "स्थान"
+        "place": "स्थान",
+        "sno": "क्र.",
+        "na": "लागू नहीं",
+        "officer_in_charge": "प्रभारी अधिकारी",
+        "unknown": "अज्ञात"
       },
       "constants": {
         "Male": "पुरुष",
@@ -884,6 +896,7 @@ const resources = {
         "id_number": "पहचान संख्या",
         "upload_id_proof": "आईडी प्रमाण अपलोड करें (JPG/PNG)",
         "contact_info": "संपर्क जानकारी",
+        "type": "प्रकार",
         "email": "ईमेल आईडी",
         "mobile": "मोबाइल नंबर",
         "applicant_photo": "आवेदक का फोटो",
@@ -896,6 +909,9 @@ const resources = {
         "otp_sent_to": "हमने {{email}} पर एक सत्यापन कोड भेजा है",
         "enter_otp": "6 अंकों का OTP दर्ज करें",
         "verify_create": "सत्यापित करें और खाता बनाएं",
+        "verifying": "सत्यापित किया जा रहा है...",
+        "max_size": "अधिकतम आकार {{size}} (JPG)",
+        "save_note": "कृपया भविष्य में उपयोग के लिए इन क्रेडेंशियल को सहेजें।",
         "success": "पंजीकरण सफल रहा!",
         "save_credentials": "आपका खाता बन गया है। कृपया अपनी लॉगिन साख नोट करें।",
         "go_to_login": "लॉगिन पर जाएं"

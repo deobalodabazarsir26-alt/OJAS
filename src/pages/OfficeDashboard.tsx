@@ -865,7 +865,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                   <tr>
-                    <th className="px-6 py-3 w-16 text-center">S.No.</th>
+                    <th className="px-6 py-3 w-16 text-center">{t('common.sno')}</th>
                     <th className="px-6 py-3">{t('office.table.ref_no')}</th>
                     <th className="px-6 py-3">{t('office.table.title')}</th>
                     <th className="px-6 py-3">{t('office.table.period')}</th>
@@ -964,7 +964,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                 <thead className="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
                   <tr>
-                    <th className="px-6 py-3 w-16 text-center">S.No.</th>
+                    <th className="px-6 py-3 w-16 text-center">{t('common.sno')}</th>
                     <th className="px-6 py-3">{t('office.table.applicant')}</th>
                     <th className="px-6 py-3">{t('office.table.claim_reason')}</th>
                     <th className="px-6 py-3">{t('office.table.date')}</th>
@@ -1074,7 +1074,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                     <tr>
-                      <th className="px-6 py-3 w-16 text-center">S.No.</th>
+                      <th className="px-6 py-3 w-16 text-center">{t('common.sno')}</th>
                       <th className="px-6 py-3">{t('office.table.candidate')}</th>
                       <th className="px-6 py-3">{t('office.table.post')}</th>
                       <th className="px-6 py-3">{t('office.table.status')}</th>
