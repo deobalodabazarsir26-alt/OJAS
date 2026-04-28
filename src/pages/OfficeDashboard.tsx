@@ -3,7 +3,7 @@ import { sheetService } from '../services/sheetService';
 import { useAuth } from '../context/AuthContext';
 import { useProgress } from '../context/ProgressContext';
 import { Advertisement, Post, Application, GeneralUser, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
-import { Plus, FileText, Users, Download, Trash2, Edit, X, Save, ShieldCheck, AlertCircle, Search, CheckCircle, XCircle, Eye, ExternalLink, User, GraduationCap, Briefcase, Home, ChevronLeft, ChevronRight, MessageSquare, Loader2 } from 'lucide-react';
+import { Plus, FileText, Users, Download, Trash2, Edit, X, Save, ShieldCheck, AlertCircle, Search, CheckCircle, XCircle, Eye, ExternalLink, User, GraduationCap, Briefcase, Home, ChevronLeft, ChevronRight, MessageSquare, Loader2, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { formatDate, getEmbedUrl, getDocPreviewUrl, formatDateForInput, translat
 import toast from 'react-hot-toast';
 
 import { pdfService } from '../services/pdfService';
+import { printService } from '../services/printService';
 
 const OfficeDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -698,8 +699,7 @@ const OfficeDashboard: React.FC = () => {
   const filteredApplications = applications.filter(a => {
     const isAdMatch = !selectedAdId || String(a.Adv_ID) === String(selectedAdId);
     const isPostMatch = !selectedPostId || String(a.Post_ID) === String(selectedPostId);
-    const isFacilityOpen = isReviewFacilityOpen(a.Adv_ID);
-    return isAdMatch && isPostMatch && isFacilityOpen;
+    return isAdMatch && isPostMatch;
   });
 
   const handleNextApplication = () => {
@@ -746,6 +746,37 @@ const OfficeDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error generating office PDF:', error);
       toast.error('Failed to generate PDF');
+    } finally {
+      setIsGeneratingPDF(false);
+      stopProgress();
+    }
+  };
+
+  const printApplicationHTML = async () => {
+    if (!viewingApplication || !applicantProfile) return;
+    
+    setIsGeneratingPDF(true);
+    startProgress('Preparing print view...');
+    
+    try {
+      const ad = ads.find(a => String(a.Adv_ID) === String(viewingApplication.Adv_ID));
+      const post = allPosts.find(p => String(p.Post_ID) === String(viewingApplication.Post_ID));
+      
+      await printService.generatePrintableApplication(
+        viewingApplication,
+        applicantProfile,
+        ad,
+        post ? { ...post, Post_Name: post.Post_Name } : undefined,
+        additionalInfo,
+        addressInfo,
+        qualifications,
+        experiences,
+        t,
+        (msg, prog) => updateProgress(prog, msg)
+      );
+    } catch (error) {
+      console.error('Error preparing print view:', error);
+      toast.error('Failed to prepare print view');
     } finally {
       setIsGeneratingPDF(false);
       stopProgress();
@@ -1059,27 +1090,21 @@ const OfficeDashboard: React.FC = () => {
           <div className="bg-white shadow-sm border border-gray-100 rounded-xl overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
               <h2 className="text-lg font-bold text-gray-900">{t('office.appls_received')}</h2>
-              <div className="text-sm text-gray-500">
-                {t('office.showing_count', { count: filteredApplications.length })}
+              <div className="flex items-center space-x-4">
+                {selectedAdId && !isReviewFacilityOpen(selectedAdId) && (
+                  <span className="flex items-center px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-lg border border-amber-100">
+                    <AlertCircle className="w-3 h-3 mr-1" />
+                    {t('office.review_not_open')}
+                  </span>
+                )}
+                <div className="text-sm text-gray-500">
+                  {t('office.showing_count', { count: filteredApplications.length })}
+                </div>
               </div>
             </div>
 
-            {selectedAdId && !isReviewFacilityOpen(selectedAdId) ? (
-              <div className="p-12 text-center">
-                <div className="bg-amber-50 border border-amber-200 p-8 rounded-2xl inline-block max-w-lg">
-                  <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{t('office.review_not_open')}</h3>
-                  <p className="text-gray-600 mb-4">
-                    {t('office.review_open_info')}
-                  </p>
-                  <div className="bg-white p-3 rounded-lg border border-amber-100 text-sm font-bold text-amber-700">
-                    {t('office.expected_open', { date: formatDate(new Date(new Date(ads.find(a => String(a.Adv_ID) === String(selectedAdId))?.End_Date || '').getTime() + 86400000).toISOString()) })}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                     <tr>
                       <th className="px-6 py-3">{t('office.table.app_id')}</th>
@@ -1132,7 +1157,6 @@ const OfficeDashboard: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-            )}
           </div>
         </div>
       )}
@@ -1188,6 +1212,14 @@ const OfficeDashboard: React.FC = () => {
                       <Download className="w-4 h-4" />
                     )}
                     <span>{isGeneratingPDF ? t('office.review_modal.generating') : t('office.review_modal.full_pdf')}</span>
+                  </button>
+                  <button
+                    onClick={printApplicationHTML}
+                    disabled={isGeneratingPDF}
+                    className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>{t('common.print', 'Print')}</span>
                   </button>
                   <button onClick={() => {
                     setViewingApplication(null);
@@ -1478,9 +1510,18 @@ const OfficeDashboard: React.FC = () => {
 
                     {/* Review Decision */}
                     <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-                      <h4 className="font-bold text-gray-900 mb-4 flex items-center text-sm">
-                        <ShieldCheck className="w-4 h-4 mr-2 text-blue-600" />
-                        {t('office.review_modal.decision')}
+                      <h4 className="font-bold text-gray-900 mb-4 flex justify-between items-center text-sm">
+                        <div className="flex items-center">
+                          <ShieldCheck className="w-4 h-4 mr-2 text-blue-600" />
+                          {t('office.review_modal.decision')}
+                        </div>
+                        {viewingApplication && !isReviewFacilityOpen(viewingApplication.Adv_ID) && (
+                          <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-lg border border-amber-100 uppercase tracking-tighter">
+                            {t('office.expected_open', { 
+                              date: formatDate(new Date(new Date(ads.find(a => String(a.Adv_ID) === String(viewingApplication.Adv_ID))?.End_Date || '').getTime() + 86400000).toISOString()) 
+                            })}
+                          </span>
+                        )}
                       </h4>
                       <form onSubmit={handleSaveReview} className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -1488,9 +1529,10 @@ const OfficeDashboard: React.FC = () => {
                             <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('office.table.status')}</label>
                             <select
                               required
+                              disabled={!isReviewFacilityOpen(viewingApplication.Adv_ID)}
                               value={reviewForm.Status}
                               onChange={(e) => setReviewForm({ ...reviewForm, Status: e.target.value })}
-                              className="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                              className="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                             >
                               <option value="Submitted">{translateConstant(t, 'Submitted')}</option>
                               <option value="Eligible">{translateConstant(t, 'Eligible')}</option>
@@ -1500,8 +1542,8 @@ const OfficeDashboard: React.FC = () => {
                           <div className="flex items-end">
                             <button
                               type="submit"
-                              disabled={isSubmitting}
-                              className="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-md disabled:opacity-50"
+                              disabled={isSubmitting || !isReviewFacilityOpen(viewingApplication.Adv_ID)}
+                              className="w-full bg-blue-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSubmitting ? t('office.review_modal.saving') : t('office.review_modal.submit_decision')}
                             </button>
@@ -1511,11 +1553,12 @@ const OfficeDashboard: React.FC = () => {
                           <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('office.review_modal.official_remarks')}</label>
                           <textarea
                             required
+                            disabled={!isReviewFacilityOpen(viewingApplication.Adv_ID)}
                             rows={2}
                             value={reviewForm.Remark}
                             onChange={(e) => setReviewForm({ ...reviewForm, Remark: e.target.value })}
                             placeholder={t('office.review_modal.remarks_placeholder')}
-                            className="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                            className="w-full border border-gray-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed"
                           />
                         </div>
                       </form>

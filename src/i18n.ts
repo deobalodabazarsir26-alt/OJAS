@@ -44,11 +44,16 @@ const resources = {
         "translate_to_hindi": "Translate to Hindi",
         "download": "Download",
         "pdf": "PDF",
+        "print": "Print",
         "processing": "Processing...",
         "save": "Save",
         "cancel": "Cancel",
         "submit": "Submit",
-        "ended_on": "Ended on"
+        "ended_on": "Ended on",
+        "no_data": "No data available",
+        "print_now": "Print Now",
+        "date": "Date",
+        "place": "Place"
       },
       "constants": {
         "Male": "Male",
@@ -231,11 +236,14 @@ const resources = {
         "form": {
           "name": "Candidate Name",
           "father": "Father's Name",
+          "father_name": "Father's Name",
           "mother": "Mother's Name",
+          "mother_name": "Mother's Name",
           "gender": "Gender",
           "dob": "Date of Birth",
           "mobile": "Mobile Number",
           "email": "Email Address",
+          "category": "Category",
           "id_proof": "ID Proof"
         }
       },
@@ -269,8 +277,7 @@ const resources = {
         "claim_pending": "Claim Pending",
         "claim_verified": "Claim Verified",
         "claim_rejected": "Claim Rejected",
-        "submitted": "Submitted",
-        "remark_on_hover": "Hover for info"
+        "submitted": "Submitted"
       },
       "manage": {
         "title": "Management",
@@ -507,6 +514,8 @@ const resources = {
         "sum_period": "Period",
         "no_qual": "No qualifications added.",
         "no_exp": "No experience added.",
+        "declaration_title": "Declaration",
+        "declaration_text": "I hereby declare that all the information provided in this application is true, complete and correct to the best of my knowledge and belief. I understand that in the event of any information being found false or incorrect at any stage, my candidacy/appointment is liable to be cancelled/terminated.",
         "submit_application": "Submit Application",
         "prev": "Previous",
         "next": "Next"
@@ -543,6 +552,112 @@ const resources = {
         "delete": "Delete",
         "id": "ID",
         "post": "Post"
+      },
+      "qual": {
+        "table": {
+          "exam": "Exam Name",
+          "board": "Board/University",
+          "year": "Passing Year",
+          "subject": "Subjects"
+        }
+      },
+      "exp": {
+        "table": {
+          "employer": "Employer",
+          "post": "Post Held",
+          "start": "Start Date",
+          "end": "End Date"
+        }
+      },
+      "address": {
+        "current": "Current Address",
+        "permanent": "Permanent Address"
+      },
+      "office": {
+        "title": "Office Dashboard",
+        "subtitle": "Manage advertisements and review applications",
+        "export_data": "Export Data",
+        "new_adv": "New Advertisement",
+        "tabs": {
+          "ads": "Advertisements",
+          "review": "Review Applications",
+          "claims": "Claims & Objections"
+        },
+        "stats": {
+          "active": "Active",
+          "total_ads": "Total Ads",
+          "appls": "Applications",
+          "pending_claims": "Pending Claims"
+        },
+        "table": {
+          "ads_title": "Your Advertisements",
+          "ref_no": "Ref No",
+          "title": "Title",
+          "period": "Period",
+          "appls": "Appls",
+          "actions": "Actions",
+          "view_doc": "View Advertisement Document",
+          "edit_adv": "Edit Advertisement",
+          "delete_adv": "Delete Advertisement",
+          "export_excel": "Export to Excel",
+          "app_id": "Application ID",
+          "candidate": "Candidate",
+          "post": "Post",
+          "status": "Status",
+          "action": "Action",
+          "review": "Review",
+          "applicant": "Applicant",
+          "claim_reason": "Claim Reason",
+          "date": "Date",
+          "view_action": "View & Take Action"
+        },
+        "no_claims": "No claims submitted yet.",
+        "pending_review_count": "{{count}} review(s) pending",
+        "select_adv": "Select Advertisement",
+        "all_ads": "-- All Advertisements --",
+        "select_post": "Select Post",
+        "all_posts": "-- All Posts --",
+        "appls_received": "Applications Received",
+        "showing_count": "Showing {{count}} application(s)",
+        "review_not_open": "Review facility is not yet open",
+        "review_open_info": "The review facility for this advertisement will only be available after the application end date.",
+        "expected_open": "Expected Opening Date: {{date}}",
+        "review_modal": {
+          "title": "Review Application",
+          "candidate": "Candidate",
+          "count_info": "{{current}} of {{total}}",
+          "full_pdf": "Full PDF",
+          "gen_pdf": "Generate Full PDF (with certificates)...",
+          "generating": "Generating...",
+          "prev": "Previous",
+          "next": "Next",
+          "personal_details": "Personal Details",
+          "edu_details": "Educational Qualification",
+          "exp_details": "Work Experience",
+          "addr_details": "Address Details",
+          "no_exp": "No experience details provided.",
+          "photo": "Candidate Photo",
+          "sign": "Candidate Signature",
+          "doc_selection": "Document Selection",
+          "preview": "Document Preview",
+          "select_doc_info": "Select a document to preview",
+          "open_original": "Open Original",
+          "decision": "Review Decision",
+          "official_remarks": "Official Remarks",
+          "remarks_placeholder": "Reason for decision...",
+          "submit_decision": "Submit Decision",
+          "saving": "Saving..."
+        },
+        "claim_modal": {
+          "title": "Review Claim/Objection",
+          "claim_details": "Claim Details",
+          "applicant_desc": "Applicant's Description",
+          "proof": "Proof",
+          "verify": "Verify",
+          "reject": "Reject",
+          "verifying": "Verifying and updating eligibility...",
+          "rejecting": "Rejecting..."
+        }
       }
     }
   },
@@ -587,13 +702,16 @@ const resources = {
         "translate_to_hindi": "हिंदी में अनुवाद करें",
         "download": "डाउनलोड",
         "pdf": "पीडीएफ",
+        "print": "प्रिंट",
         "processing": "प्रक्रिया जारी है...",
         "save": "सहेजें",
         "cancel": "रद्द करें",
         "submit": "जमा करें",
         "ended_on": "समाप्त तिथि",
         "no_data": "कोई डेटा नहीं",
-        "deleting": "हटा रहा है..."
+        "print_now": "अभी प्रिंट करें",
+        "date": "दिनांक",
+        "place": "स्थान"
       },
       "constants": {
         "Male": "पुरुष",
@@ -776,11 +894,14 @@ const resources = {
         "form": {
           "name": "उम्मीदवार का नाम",
           "father": "पिता का नाम",
+          "father_name": "पिता का नाम",
           "mother": "माता का नाम",
+          "mother_name": "माता का नाम",
           "gender": "लिंग",
           "dob": "जन्म तिथि",
           "mobile": "मोबाइल नंबर",
           "email": "ईमेल पता",
+          "category": "श्रेणी",
           "id_proof": "पहचान प्रमाण"
         }
       },
@@ -814,8 +935,7 @@ const resources = {
         "claim_pending": "दावा लंबित है",
         "claim_verified": "दावा सत्यापित",
         "claim_rejected": "दावा अस्वीकृत",
-        "submitted": "जमा कर दिया गया",
-        "remark_on_hover": "विवरण के लिए माउस ले जाएं"
+        "submitted": "जमा कर दिया गया"
       },
       "manage": {
         "title": "प्रबंधन",
@@ -1052,6 +1172,8 @@ const resources = {
         "sum_period": "अवधि",
         "no_qual": "कोई योग्यता नहीं जोड़ी गई।",
         "no_exp": "कोई अनुभव नहीं जोड़ा गया।",
+        "declaration_title": "घोषणा",
+        "declaration_text": "मैं इसके द्वारा घोषणा करता/करती हूँ कि इस आवेदन में दी गई सभी जानकारी मेरे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य, पूर्ण और सही है। मैं समझता/समझती हूँ कि किसी भी स्तर पर कोई भी जानकारी गलत या त्रुटिपूर्ण पाए जाने की स्थिति में, मेरी उम्मीदवारी/नियुक्ति रद्द/समाप्त की जा सकती है।",
         "submit_application": "आवेदन जमा करें",
         "prev": "पिछला",
         "next": "अगला"
@@ -1167,6 +1289,26 @@ const resources = {
         "id": "आईडी",
         "post": "पद",
         "success_delete": "आवेदन सफलतापूर्वक हटा दिया गया है"
+      },
+      "qual": {
+        "table": {
+          "exam": "परीक्षा का नाम",
+          "board": "बोर्ड/विश्वविद्यालय",
+          "year": "उत्तीर्ण वर्ष",
+          "subject": "विषय"
+        }
+      },
+      "exp": {
+        "table": {
+          "employer": "नियोक्ता",
+          "post": "धारित पद",
+          "start": "प्रारंभ तिथि",
+          "end": "अंतिम तिथि"
+        }
+      },
+      "address": {
+        "current": "वर्तमान पता",
+        "permanent": "स्थायी पता"
       }
     }
   }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sheetService } from '../services/sheetService';
 import { useAuth } from '../context/AuthContext';
 import { Application, Advertisement, Post, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
-import { FileText, Download, Clock, CheckCircle, User as UserIcon, Loader2, AlertTriangle, Upload, X, Edit } from 'lucide-react';
+import { FileText, Download, Clock, CheckCircle, User as UserIcon, Loader2, AlertTriangle, Upload, X, Edit, Info, Printer } from 'lucide-react';
 import { motion } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -14,6 +14,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 import { pdfService } from '../services/pdfService';
+import { printService } from '../services/printService';
 
 const ApplicantDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -124,6 +125,43 @@ const ApplicantDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast.error('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(null);
+      stopProgress();
+    }
+  };
+
+  const handlePrint = async (appl: Application) => {
+    setIsGeneratingPDF(appl.Appl_ID);
+    startProgress('Preparing for printing...');
+    
+    try {
+      updateProgress(10, 'Fetching application details...');
+      const [additionalInfo, addressInfo, qualifications, experiences] = await Promise.all([
+        sheetService.getAll<AdditionalInfo>('Additional_Info').then(data => data.find(i => String(i.Appl_ID) === String(appl.Appl_ID))),
+        sheetService.getAll<AddressInfo>('Address_Info').then(data => data.find(i => String(i.Appl_ID) === String(appl.Appl_ID))),
+        sheetService.getAll<QualificationInfo>('Qualification_Info').then(data => data.filter(i => String(i.Appl_ID) === String(appl.Appl_ID))),
+        sheetService.getAll<ExperienceInfo>('Experience_Info').then(data => data.filter(i => String(i.Appl_ID) === String(appl.Appl_ID))),
+      ]);
+
+      if (!applicantProfile) return;
+
+      await printService.generatePrintableApplication(
+        appl,
+        applicantProfile,
+        ads.find(a => String(a.Adv_ID) === String(appl.Adv_ID)),
+        posts.find(p => String(p.Post_ID) === String(appl.Post_ID)),
+        additionalInfo || null,
+        addressInfo || null,
+        qualifications,
+        experiences,
+        t,
+        (msg, prog) => updateProgress(prog, msg)
+      );
+      
+    } catch (error) {
+      console.error('Error preparing print view:', error);
+      toast.error('Failed to prepare print view. Please try again.');
     } finally {
       setIsGeneratingPDF(null);
       stopProgress();
@@ -304,7 +342,7 @@ const ApplicantDashboard: React.FC = () => {
                       </td>
                       <td className="px-8 py-6 align-top">
                         <div className="flex flex-col gap-2">
-                          <div className="relative group/remark">
+                          <div className="relative group/remark flex items-center gap-1.5">
                             <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit shadow-xs border transition-all ${
                               appl.Status === 'Eligible' ? 'bg-green-50 text-green-700 border-green-100' :
                               appl.Status === 'Ineligible' ? 'bg-red-50 text-red-700 border-red-100' :
@@ -321,20 +359,18 @@ const ApplicantDashboard: React.FC = () => {
                             </span>
                             
                             {appl.Remark && (
-                              <div className="absolute left-0 top-full mt-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded shadow-lg opacity-0 group-hover/remark:opacity-100 pointer-events-none transition-opacity z-10 leading-relaxed">
-                                <p className="font-bold border-b border-gray-700 mb-1 pb-1 text-gray-400 uppercase tracking-tighter">{t('dashboard.remarks')}</p>
-                                {appl.Remark}
-                                <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 rotate-45"></div>
-                              </div>
+                              <>
+                                <div className="p-1 bg-gray-50 rounded-full text-gray-400 group-hover/remark:bg-blue-50 group-hover/remark:text-blue-600 transition-all border border-gray-100 group-hover/remark:border-blue-100 cursor-help">
+                                  <Info className="w-3 h-3" />
+                                </div>
+                                <div className="absolute left-0 top-full mt-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded shadow-lg opacity-0 group-hover/remark:opacity-100 pointer-events-none transition-opacity z-20 leading-relaxed shadow-blue-900/10">
+                                  <p className="font-bold border-b border-gray-700 mb-1 pb-1 text-gray-400 uppercase tracking-tighter">{t('dashboard.remarks')}</p>
+                                  {appl.Remark}
+                                  <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 rotate-45"></div>
+                                </div>
+                              </>
                             )}
                           </div>
-                          
-                          {appl.Remark && (
-                            <div className="flex items-center text-[10px] text-gray-400 italic">
-                               <Clock className="w-3 h-3 mr-1" />
-                               {t('dashboard.remark_on_hover', 'Hover for remarks')}
-                            </div>
-                          )}
                         </div>
                       </td>
                       <td className="px-8 py-6 align-top">
@@ -407,6 +443,15 @@ const ApplicantDashboard: React.FC = () => {
                             ) : (
                               <Download className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                             )}
+                          </button>
+
+                          <button
+                            onClick={() => handlePrint(appl)}
+                            disabled={isGeneratingPDF === appl.Appl_ID}
+                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all border border-transparent hover:border-indigo-100 shadow-xs disabled:opacity-50 group/btn"
+                            title={t('common.print', 'Print Application')}
+                          >
+                            <Printer className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                           </button>
                         </div>
                       </td>
