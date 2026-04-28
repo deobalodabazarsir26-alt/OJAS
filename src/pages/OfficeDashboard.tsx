@@ -215,7 +215,6 @@ const OfficeDashboard: React.FC = () => {
 
         // 2. Update existing posts or insert new ones
         updateProgress(70, 'Updating posts...');
-        let nextPostId = await sheetService.getNextId('Post', 'Post_ID');
         for (let i = 0; i < posts.length; i++) {
           const postData = posts[i];
           updateProgress(70 + (i / posts.length) * 20, `Saving post: ${postData.Post_Name}`);
@@ -229,7 +228,7 @@ const OfficeDashboard: React.FC = () => {
           } else {
             // Insert new post
             const newPost: Post = {
-              Post_ID: String(nextPostId++),
+              Post_ID: sheetService.generateUniqueId(),
               Adv_ID: editingAdId,
               Post_Name: postData.Post_Name || '',
               Post_Type: postData.Post_Type || POST_TYPE_OPTIONS[0],
@@ -247,8 +246,7 @@ const OfficeDashboard: React.FC = () => {
       } else {
         // Create new advertisement
         updateProgress(20, 'Generating ID...');
-        const nextAdId = await sheetService.getNextId('Advertisement', 'Adv_ID');
-        const adId = String(nextAdId);
+        const adId = sheetService.generateUniqueId();
         const newAd: Advertisement = {
           Adv_ID: adId,
           Dept_ID: (profile as any).Dept_ID,
@@ -270,12 +268,11 @@ const OfficeDashboard: React.FC = () => {
         await sheetService.insert('Advertisement', newAd);
 
         updateProgress(60, 'Saving posts...');
-        let nextPostId = await sheetService.getNextId('Post', 'Post_ID');
         for (let i = 0; i < posts.length; i++) {
           const postData = posts[i];
           updateProgress(60 + (i / posts.length) * 30, `Saving post: ${postData.Post_Name}`);
           const newPost: Post = {
-            Post_ID: String(nextPostId++),
+            Post_ID: sheetService.generateUniqueId(),
             Adv_ID: adId,
             Post_Name: postData.Post_Name || '',
             Post_Type: postData.Post_Type || POST_TYPE_OPTIONS[0],

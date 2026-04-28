@@ -168,6 +168,15 @@ const initializeMockData = () => {
   if (!localStorage.getItem(STORAGE_KEYS.Claim)) {
     localStorage.setItem(STORAGE_KEYS.Claim, JSON.stringify([]));
   }
+  if (!localStorage.getItem(STORAGE_KEYS.General_User)) {
+    localStorage.setItem(STORAGE_KEYS.General_User, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.Office_User)) {
+    localStorage.setItem(STORAGE_KEYS.Office_User, JSON.stringify([]));
+  }
+  if (!localStorage.getItem(STORAGE_KEYS.Application)) {
+    localStorage.setItem(STORAGE_KEYS.Application, JSON.stringify([]));
+  }
 };
 
 initializeMockData();
@@ -178,17 +187,19 @@ export const sheetService = {
   async getAll<T>(sheetName: keyof typeof STORAGE_KEYS, forceLocal: boolean = false): Promise<T[]> {
     if (!forceLocal && APPS_SCRIPT_URL && isAppsScriptAvailable) {
       try {
-        const response = await fetch(`${APPS_SCRIPT_URL}?sheetName=${sheetName}`, {
+        const fetchUrl = `${APPS_SCRIPT_URL}?sheetName=${encodeURIComponent(sheetName)}`;
+        const response = await fetch(fetchUrl, {
           redirect: 'follow'
         });
         if (!response.ok) {
-          console.error(`Apps Script Fetch Failed for ${sheetName}: Status ${response.status} ${response.statusText}`);
-          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+          console.warn(`Apps Script Fetch returned status ${response.status} (${response.statusText}) for ${sheetName}. URL: ${fetchUrl}. Falling back to localStorage.`);
+          // Don't throw, just move to the localStorage fallback
+        } else {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) return data;
+          if (Array.isArray(data) && data.length === 0 && sheetName !== 'Global_Constants') return [];
+          console.warn(`Apps Script returned empty or non-array for ${sheetName}, falling back to localStorage`);
         }
-        const data = await response.json();
-        if (Array.isArray(data) && data.length > 0) return data;
-        if (Array.isArray(data) && data.length === 0 && sheetName !== 'Global_Constants') return [];
-        console.warn(`Apps Script returned empty or non-array for ${sheetName}, falling back to localStorage`);
       } catch (error) {
         // If it's a network error, we might want to stop trying to avoid spamming the console
         if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -393,22 +404,14 @@ export const sheetService = {
     }
   },
 
-  async getNextId(sheetName: keyof typeof STORAGE_KEYS, idColumn: string): Promise<number> {
-    const data = await sheetService.getAll<any>(sheetName);
-    if (data.length === 0) return 1;
-    
-    const ids = data.map(item => {
-      const val = item[idColumn];
-      if (typeof val === 'number') return val;
-      if (typeof val === 'string') {
-        const numericPart = val.replace(/\D/g, '');
-        return numericPart ? parseInt(numericPart, 10) : 0;
-      }
-      return 0;
-    });
-    
-    const maxId = Math.max(...ids, 0);
-    return maxId + 1;
+  // Added for multi-user safety: generates a collision-resistant ID
+  generateUniqueId(): string {
+    // Generate a secure random string using crypto API
+    const array = new Uint8Array(8);
+    window.crypto.getRandomValues(array);
+    const randomHex = Array.from(array).map(b => b.toString(16).padStart(2, '0')).join('');
+    // Combine with timestamp in base36 for a reasonably short, unique ID
+    return `${Date.now().toString(36)}-${randomHex}`;
   },
 
   isCloudConnected(): boolean {

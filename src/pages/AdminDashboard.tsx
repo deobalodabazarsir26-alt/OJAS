@@ -136,9 +136,9 @@ const AdminDashboard: React.FC = () => {
     startProgress(t('manage.add_new') + '...');
     try {
       updateProgress(30, t('common.processing'));
-      const nextDeptId = await sheetService.getNextId('Department', 'Dept_ID');
+      const nextDeptId = sheetService.generateUniqueId();
       const newDept: Department = {
-        Dept_ID: String(nextDeptId),
+        Dept_ID: nextDeptId,
         Dept_Name: deptForm.Dept_Name,
         Dept_Type: deptForm.Dept_Type,
         T_STMP_ADD: new Date().toISOString(),

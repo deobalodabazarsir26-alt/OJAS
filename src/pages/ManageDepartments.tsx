@@ -50,9 +50,9 @@ const ManageDepartments: React.FC = () => {
     setIsSubmitting(true);
     startProgress('Adding new department...');
     try {
-      const nextId = await sheetService.getNextId('Department', 'Dept_ID');
+      const nextId = sheetService.generateUniqueId();
       const newDept: Department = {
-        Dept_ID: String(nextId),
+        Dept_ID: nextId,
         Dept_Name: deptForm.Dept_Name,
         Dept_Type: deptForm.Dept_Type,
         T_STMP_ADD: new Date().toISOString(),

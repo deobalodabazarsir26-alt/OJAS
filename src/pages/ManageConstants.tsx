@@ -122,9 +122,9 @@ const ManageConstants: React.FC = () => {
         { Category: 'EMPLOYMENT_TYPE', Value: 'Regular' },
         { Category: 'EMPLOYMENT_TYPE', Value: 'Contractual' },
         { Category: 'EMPLOYMENT_TYPE', Value: 'Temporary' },
-      ].map((c, i) => ({
+      ].map((c) => ({
         ...c,
-        Constant_ID: String(i + 1),
+        Constant_ID: sheetService.generateUniqueId(),
         T_STMP_ADD: new Date().toISOString(),
         T_STMP_UPD: new Date().toISOString()
       }));
@@ -168,9 +168,8 @@ const ManageConstants: React.FC = () => {
     setIsSubmitting(true);
     startProgress('Adding global value...');
     try {
-      const nextId = await sheetService.getNextId('Global_Constants', 'Constant_ID');
       const payload: GlobalConstant = {
-        Constant_ID: String(nextId),
+        Constant_ID: sheetService.generateUniqueId(),
         Category: newConstant.Category,
         Value: newConstant.Value,
         T_STMP_ADD: new Date().toISOString(),

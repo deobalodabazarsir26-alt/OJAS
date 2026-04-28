@@ -168,9 +168,8 @@ const ApplicantDashboard: React.FC = () => {
 
     setIsSubmittingClaim(true);
     try {
-      const nextId = await sheetService.getNextId('Claim', 'Claim_ID');
       const newClaim: Claim = {
-        Claim_ID: String(nextId),
+        Claim_ID: sheetService.generateUniqueId(),
         Appl_ID: selectedAppl.Appl_ID,
         User_ID: user.User_ID,
         Description: claimForm.Description,

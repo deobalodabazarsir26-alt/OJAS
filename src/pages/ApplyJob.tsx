@@ -84,7 +84,7 @@ const ApplyJob: React.FC = () => {
 
   const [qualifications, setQualifications] = useState<Partial<QualificationInfo>[]>([
     { 
-      Qual_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      Qual_ID: `temp_${sheetService.generateUniqueId()}`,
       Qualification_Type: 'High School (10th) Certificate',
       Course_Name: '',
       Board_Name: '',
@@ -405,8 +405,7 @@ const ApplyJob: React.FC = () => {
 
       if (!isEditMode) {
         updateProgress(10, 'Generating application ID...');
-        const nextApplId = await sheetService.getNextId('Application', 'Appl_ID');
-        applId = String(nextApplId);
+        applId = sheetService.generateUniqueId();
 
         const application: Application = {
           Appl_ID: applId,
@@ -445,7 +444,7 @@ const ApplyJob: React.FC = () => {
         existingAddl = allAddl.find(a => String(a.Appl_ID) === String(applId));
       }
 
-      const nextAddlId = existingAddl?.Addl_ID || String(await sheetService.getNextId('Additional_Info', 'Addl_ID'));
+      const nextAddlId = existingAddl?.Addl_ID || sheetService.generateUniqueId();
 
       const addlData = { 
         Addl_ID: nextAddlId,
@@ -486,7 +485,7 @@ const ApplyJob: React.FC = () => {
         existingAddr = allAddr.find(a => String(a.Appl_ID) === String(applId));
       }
 
-      const nextAddrId = existingAddr?.Addr_ID || String(await sheetService.getNextId('Address_Info', 'Addr_ID'));
+      const nextAddrId = existingAddr?.Addr_ID || sheetService.generateUniqueId();
 
       const addrData = { 
         Addr_ID: nextAddrId,
@@ -531,8 +530,6 @@ const ApplyJob: React.FC = () => {
       }
       
       // 2. Insert new or Update existing
-      let nextQualIdNum = await sheetService.getNextId('Qualification_Info', 'Qual_ID');
-
       for (let i = 0; i < qualifications.length; i++) {
         const q = qualifications[i];
         const isNew = !q.Qual_ID || String(q.Qual_ID).startsWith('temp_');
@@ -540,7 +537,7 @@ const ApplyJob: React.FC = () => {
         updateProgress(70 + (i / qualifications.length) * 15, `${isNew ? 'Inserting' : 'Updating'} qualification: ${q.Qualification_Type}`);
 
         if (isNew) {
-          const finalQualId = String(nextQualIdNum++);
+          const finalQualId = sheetService.generateUniqueId();
           await sheetService.insert('Qualification_Info', { 
             ...q, 
             Qual_ID: finalQualId,
@@ -578,8 +575,6 @@ const ApplyJob: React.FC = () => {
       }
 
       // 2. Insert new or Update existing
-      let nextExpIdNum = await sheetService.getNextId('Experience_Info', 'Exp_ID');
-
       for (let i = 0; i < experiences.length; i++) {
         const e = experiences[i];
         const isNew = !e.Exp_ID || String(e.Exp_ID).startsWith('temp_');
@@ -587,7 +582,7 @@ const ApplyJob: React.FC = () => {
         updateProgress(85 + (i / experiences.length) * 10, `${isNew ? 'Inserting' : 'Updating'} experience: ${e.Employer_Name}`);
 
         if (isNew) {
-          const finalExpId = String(nextExpIdNum++);
+          const finalExpId = sheetService.generateUniqueId();
           await sheetService.insert('Experience_Info', { 
             ...e, 
             Exp_ID: finalExpId,
@@ -1226,7 +1221,7 @@ const ApplyJob: React.FC = () => {
             ))}
             <button
               onClick={() => setQualifications([...qualifications, { 
-                Qual_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                Qual_ID: `temp_${sheetService.generateUniqueId()}`,
                 Qualification_Type: 'Graduation Certificate',
                 Course_Name: '',
                 Board_Name: '',
@@ -1377,7 +1372,7 @@ const ApplyJob: React.FC = () => {
             )}
             <button
               onClick={() => setExperiences([...experiences, { 
-                Exp_ID: `temp_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+                Exp_ID: `temp_${sheetService.generateUniqueId()}`,
                 Currently_Working: 'No',
                 Employer_Type: '',
                 Employment_Type: '',

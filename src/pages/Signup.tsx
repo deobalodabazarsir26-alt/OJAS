@@ -171,8 +171,7 @@ const Signup: React.FC = () => {
 
     try {
       updateProgress(20, 'Generating credentials...');
-      const nextUserId = await sheetService.getNextId('User', 'User_ID');
-      const userId = String(nextUserId);
+      const userId = sheetService.generateUniqueId();
       const username = formData.Email_ID.split('@')[0] + Math.floor(100 + Math.random() * 900);
       const password = 'Pass' + Math.floor(1000 + Math.random() * 9000);
 

@@ -195,7 +195,6 @@ const ManageAdvertisements: React.FC = () => {
       }
 
       updateProgress(70, 'Saving current posts...');
-      let nextPostId = await sheetService.getNextId('Post', 'Post_ID');
       for (const post of posts) {
         if (post.Post_ID) {
           // Update existing
@@ -207,7 +206,7 @@ const ManageAdvertisements: React.FC = () => {
           // Insert new
           await sheetService.insert('Post', {
             ...post,
-            Post_ID: String(nextPostId++),
+            Post_ID: sheetService.generateUniqueId(),
             Adv_ID: editingAdId,
             T_STMP_ADD: new Date().toISOString(),
             T_STMP_UPD: new Date().toISOString()

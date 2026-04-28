@@ -75,10 +75,8 @@ const ManageOffices: React.FC = () => {
     setIsSubmitting(true);
     startProgress('Creating new office and user account...');
     try {
-      const nextOfficeId = await sheetService.getNextId('Office', 'Office_ID');
-      const nextUserId = await sheetService.getNextId('User', 'User_ID');
-      const officeId = String(nextOfficeId);
-      const userId = String(nextUserId);
+      const officeId = sheetService.generateUniqueId();
+      const userId = sheetService.generateUniqueId();
 
       const newOffice: Office = {
         Office_ID: officeId,
