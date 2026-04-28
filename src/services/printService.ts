@@ -31,12 +31,13 @@ export const printService = {
       <head>
         <title>Application_${appl.Appl_ID}</title>
         <style>
+          @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap');
           @media print {
             .no-print { display: none; }
             body { padding: 0; margin: 0; }
           }
           body {
-            font-family: 'Helvetica', Arial, sans-serif;
+            font-family: 'Noto Sans Devanagari', 'Helvetica', Arial, sans-serif;
             line-height: 1.5;
             color: #333;
             max-width: 800px;

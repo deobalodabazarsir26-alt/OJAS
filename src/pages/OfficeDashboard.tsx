@@ -3,7 +3,7 @@ import { sheetService } from '../services/sheetService';
 import { useAuth } from '../context/AuthContext';
 import { useProgress } from '../context/ProgressContext';
 import { Advertisement, Post, Application, GeneralUser, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
-import { Plus, FileText, Users, Download, Trash2, Edit, X, Save, ShieldCheck, AlertCircle, Search, CheckCircle, XCircle, Eye, ExternalLink, User, GraduationCap, Briefcase, Home, ChevronLeft, ChevronRight, MessageSquare, Loader2, Printer } from 'lucide-react';
+import { Plus, FileText, Users, Download, Trash2, Edit, X, Save, ShieldCheck, AlertCircle, Search, CheckCircle, XCircle, Eye, ExternalLink, User, GraduationCap, Briefcase, Home, ChevronLeft, ChevronRight, MessageSquare, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,6 @@ import { formatDate, getEmbedUrl, getDocPreviewUrl, formatDateForInput, translat
 import toast from 'react-hot-toast';
 
 import { pdfService } from '../services/pdfService';
-import { printService } from '../services/printService';
 
 const OfficeDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -735,8 +734,8 @@ const OfficeDashboard: React.FC = () => {
         addressInfo,
         qualifications,
         experiences,
-        ad?.Title || 'N/A',
-        post?.Post_Name || 'N/A',
+        ad?.Title || t('manage.na'),
+        post?.Post_Name || t('manage.na'),
         t,
         {
           includeCertificates: true,
@@ -746,37 +745,6 @@ const OfficeDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error generating office PDF:', error);
       toast.error('Failed to generate PDF');
-    } finally {
-      setIsGeneratingPDF(false);
-      stopProgress();
-    }
-  };
-
-  const printApplicationHTML = async () => {
-    if (!viewingApplication || !applicantProfile) return;
-    
-    setIsGeneratingPDF(true);
-    startProgress('Preparing print view...');
-    
-    try {
-      const ad = ads.find(a => String(a.Adv_ID) === String(viewingApplication.Adv_ID));
-      const post = allPosts.find(p => String(p.Post_ID) === String(viewingApplication.Post_ID));
-      
-      await printService.generatePrintableApplication(
-        viewingApplication,
-        applicantProfile,
-        ad,
-        post ? { ...post, Post_Name: post.Post_Name } : undefined,
-        additionalInfo,
-        addressInfo,
-        qualifications,
-        experiences,
-        t,
-        (msg, prog) => updateProgress(prog, msg)
-      );
-    } catch (error) {
-      console.error('Error preparing print view:', error);
-      toast.error('Failed to prepare print view');
     } finally {
       setIsGeneratingPDF(false);
       stopProgress();
@@ -1202,24 +1170,16 @@ const OfficeDashboard: React.FC = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={downloadApplicationPDF}
+                    onClick={() => downloadApplicationPDF()}
                     disabled={isGeneratingPDF}
                     className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
                   >
                     {isGeneratingPDF ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <Download className="w-4 h-4" />
+                      <FileText className="w-4 h-4" />
                     )}
                     <span>{isGeneratingPDF ? t('office.review_modal.generating') : t('office.review_modal.full_pdf')}</span>
-                  </button>
-                  <button
-                    onClick={printApplicationHTML}
-                    disabled={isGeneratingPDF}
-                    className="flex items-center space-x-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-bold transition-all disabled:opacity-50"
-                  >
-                    <Printer className="w-4 h-4" />
-                    <span>{t('common.print', 'Print')}</span>
                   </button>
                   <button onClick={() => {
                     setViewingApplication(null);
@@ -1294,15 +1254,22 @@ const OfficeDashboard: React.FC = () => {
                           <p className="text-xs text-gray-500 uppercase font-semibold">{t('apply.domicile_cg')}</p>
                           <div className="text-right">
                              <p className="text-sm font-medium text-gray-900">{translateConstant(t, additionalInfo?.Is_CG === 'Yes' ? 'Yes' : 'No')}</p>
-                             <p className="text-[10px] text-gray-500">{translateConstant(t, additionalInfo?.Locality || '')} ({translateConstant(t, additionalInfo?.Domicile_District || '')})</p>
+                             <p className="text-[10px] text-gray-500">
+                               {additionalInfo?.Is_CG === 'Yes' 
+                                 ? `${translateConstant(t, additionalInfo?.Domicile_District || '')}` 
+                                 : `${translateConstant(t, additionalInfo?.Domicile_State || '')}`}
+                             </p>
                           </div>
                         </div>
-                        {additionalInfo?.Is_PWD === 'Yes' && (
-                          <div className="flex justify-between border-b border-gray-50 pb-1 col-span-2">
-                            <p className="text-xs text-gray-500 uppercase font-semibold">{t('apply.is_pwd')}</p>
-                            <p className="text-sm font-medium text-gray-900">{additionalInfo?.PwD_Percentage}% {t('apply.pwd_percentage')} ({translateConstant(t, additionalInfo?.PwD_District || '')}, {translateConstant(t, additionalInfo?.PwD_State || '')})</p>
+                        <div className="flex justify-between border-b border-gray-50 pb-1">
+                          <p className="text-xs text-gray-500 uppercase font-semibold">{t('apply.is_pwd')}</p>
+                          <div className="text-right">
+                            <p className="text-sm font-medium text-gray-900">{translateConstant(t, additionalInfo?.Is_PWD === 'Yes' ? 'Yes' : 'No')}</p>
+                            {additionalInfo?.Is_PWD === 'Yes' && (
+                              <p className="text-[10px] text-gray-500">{additionalInfo?.PwD_Percentage}% {t('apply.pwd_percentage')}</p>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
 

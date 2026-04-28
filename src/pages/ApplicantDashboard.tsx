@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { sheetService } from '../services/sheetService';
 import { useAuth } from '../context/AuthContext';
 import { Application, Advertisement, Post, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
-import { FileText, Download, Clock, CheckCircle, User as UserIcon, Loader2, AlertTriangle, Upload, X, Edit, Info, Printer } from 'lucide-react';
+import { FileText, Download, Clock, CheckCircle, User as UserIcon, Loader2, AlertTriangle, Upload, X, Edit, Info } from 'lucide-react';
 import { motion } from 'motion/react';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -14,7 +14,6 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 import { pdfService } from '../services/pdfService';
-import { printService } from '../services/printService';
 
 const ApplicantDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -57,8 +56,8 @@ const ApplicantDashboard: React.FC = () => {
     fetchData();
   }, [user]);
 
-  const getAdTitle = (id: string) => ads.find(a => String(a.Adv_ID) === String(id))?.Title || t('common.unknown_ad', 'Unknown Ad');
-  const getPostName = (id: string) => posts.find(p => String(p.Post_ID) === String(id))?.Post_Name || t('common.unknown_post', 'Unknown Post');
+  const getAdTitle = (id: string) => ads.find(a => String(a.Adv_ID) === String(id))?.Title || t('common.unknown_ad');
+  const getPostName = (id: string) => posts.find(p => String(p.Post_ID) === String(id))?.Post_Name || t('common.unknown_post');
 
   const isClaimPeriodActive = (advId: string) => {
     const ad = ads.find(a => String(a.Adv_ID) === String(advId));
@@ -95,7 +94,7 @@ const ApplicantDashboard: React.FC = () => {
 
   const downloadPDF = async (appl: Application) => {
     setIsGeneratingPDF(appl.Appl_ID);
-    startProgress('Preparing your application PDF...');
+    startProgress('Preparing application PDF with documents...');
     
     try {
       updateProgress(10, 'Fetching application details...');
@@ -125,43 +124,6 @@ const ApplicantDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast.error('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsGeneratingPDF(null);
-      stopProgress();
-    }
-  };
-
-  const handlePrint = async (appl: Application) => {
-    setIsGeneratingPDF(appl.Appl_ID);
-    startProgress('Preparing for printing...');
-    
-    try {
-      updateProgress(10, 'Fetching application details...');
-      const [additionalInfo, addressInfo, qualifications, experiences] = await Promise.all([
-        sheetService.getAll<AdditionalInfo>('Additional_Info').then(data => data.find(i => String(i.Appl_ID) === String(appl.Appl_ID))),
-        sheetService.getAll<AddressInfo>('Address_Info').then(data => data.find(i => String(i.Appl_ID) === String(appl.Appl_ID))),
-        sheetService.getAll<QualificationInfo>('Qualification_Info').then(data => data.filter(i => String(i.Appl_ID) === String(appl.Appl_ID))),
-        sheetService.getAll<ExperienceInfo>('Experience_Info').then(data => data.filter(i => String(i.Appl_ID) === String(appl.Appl_ID))),
-      ]);
-
-      if (!applicantProfile) return;
-
-      await printService.generatePrintableApplication(
-        appl,
-        applicantProfile,
-        ads.find(a => String(a.Adv_ID) === String(appl.Adv_ID)),
-        posts.find(p => String(p.Post_ID) === String(appl.Post_ID)),
-        additionalInfo || null,
-        addressInfo || null,
-        qualifications,
-        experiences,
-        t,
-        (msg, prog) => updateProgress(prog, msg)
-      );
-      
-    } catch (error) {
-      console.error('Error preparing print view:', error);
-      toast.error('Failed to prepare print view. Please try again.');
     } finally {
       setIsGeneratingPDF(null);
       stopProgress();
@@ -434,24 +396,15 @@ const ApplicantDashboard: React.FC = () => {
 
                           <button
                             onClick={() => downloadPDF(appl)}
-                            disabled={isGeneratingPDF === appl.Appl_ID}
+                            disabled={!!isGeneratingPDF}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-all border border-transparent hover:border-blue-100 shadow-xs disabled:opacity-50 group/btn"
-                            title={t('common.pdf')}
+                            title={t('dashboard.pdf_full', 'Application + Documents')}
                           >
                             {isGeneratingPDF === appl.Appl_ID ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <Download className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
+                              <FileText className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                             )}
-                          </button>
-
-                          <button
-                            onClick={() => handlePrint(appl)}
-                            disabled={isGeneratingPDF === appl.Appl_ID}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-full transition-all border border-transparent hover:border-indigo-100 shadow-xs disabled:opacity-50 group/btn"
-                            title={t('common.print', 'Print Application')}
-                          >
-                            <Printer className="w-4 h-4 transition-transform group-hover/btn:scale-110" />
                           </button>
                         </div>
                       </td>

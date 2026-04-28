@@ -401,14 +401,16 @@ export const sheetService = {
   async proxyImage(url: string): Promise<string> {
     if (!url) return '';
     if (url.startsWith('data:')) return url;
-    if (!isAppsScriptAvailable || !APPS_SCRIPT_URL) return '';
+    
     try {
-      console.log('Proxying image URL:', url);
-      const proxyUrl = `${APPS_SCRIPT_URL}?action=proxyImage&url=${encodeURIComponent(url)}`;
+      console.log('Proxying image URL via local server:', url);
+      const proxyUrl = `/api/proxy?url=${encodeURIComponent(url)}`;
       const response = await fetch(proxyUrl);
+      if (!response.ok) {
+        throw new Error(`Proxy response not ok: ${response.statusText}`);
+      }
       const text = await response.text();
       if (text.startsWith('data:')) {
-        console.log('Proxy success, data length:', text.length);
         return text;
       }
       console.error('Proxy Image Error Response:', text);

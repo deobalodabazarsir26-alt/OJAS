@@ -1,8 +1,8 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { Application, Advertisement, Post, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, GeneralUser } from '../types';
 import { formatDate } from '../lib/utils';
 import { sheetService } from './sheetService';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 
 export const pdfService = {
   generateApplicationPDF: async (
@@ -10,8 +10,8 @@ export const pdfService = {
     applicantProfile: GeneralUser,
     additionalInfo: AdditionalInfo | null,
     addressInfo: AddressInfo | null,
-    qualifications: QualificationInfo[],
-    experiences: ExperienceInfo[],
+    quals: QualificationInfo[],
+    exps: ExperienceInfo[],
     adTitle: string,
     postName: string,
     t: any,
@@ -19,349 +19,352 @@ export const pdfService = {
   ) => {
     const { includeCertificates = false, onProgress = () => {} } = options;
 
-    const tc = (val: string | undefined) => {
-      if (!val) return '';
-      // We force English for constants in PDF to ensure PDF logic is consistent
-      return val;
-    };
+    onProgress('Processing images...', 20);
+    const photoBase64 = applicantProfile?.Photo_URL ? await sheetService.proxyImage(applicantProfile.Photo_URL) : null;
+    const signBase64 = applicantProfile?.Signature_URL ? await sheetService.proxyImage(applicantProfile.Signature_URL) : null;
 
-    onProgress('Processing images...', 40);
-    const photoBase64 = applicantProfile?.Photo_URL ? await sheetService.proxyImage(applicantProfile.Photo_URL) : '';
-    const signBase64 = applicantProfile?.Signature_URL ? await sheetService.proxyImage(applicantProfile.Signature_URL) : '';
-    
-
-    onProgress('Generating PDF document...', 70);
-    const doc = new jsPDF();
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-    
-    // Professional Colors
-    const primaryColor: [number, number, number] = [30, 64, 175]; // Royal Blue
-    const secondaryColor: [number, number, number] = [248, 250, 252]; // Light Slate
-    const accentColor: [number, number, number] = [59, 130, 246]; // Bright Blue
-    const borderColor: [number, number, number] = [30, 64, 175];
-
-    const drawPageLayout = (d: typeof doc, currentPage: number, totalPages: number) => {
-      const pW = d.internal.pageSize.getWidth();
-      const pH = d.internal.pageSize.getHeight();
-      
-      // Page Border
-      d.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
-      d.setLineWidth(0.5);
-      d.rect(8, 8, pW - 16, pH - 16);
-      d.setLineWidth(0.2);
-      d.rect(9.5, 9.5, pW - 19, pH - 19);
-      
-      // Footer
-      d.setFontSize(8);
-      d.setTextColor(100);
-      d.setFont('helvetica', 'italic');
-      d.text('OJAS - Online Job Application System | Generated on ' + new Date().toLocaleDateString(), 20, pH - 12);
-      d.setFont('helvetica', 'normal');
-      d.text(`Page ${currentPage} of ${totalPages}`, pW - 30, pH - 12);
-    };
-
-    const drawHeader = (d: typeof doc, y: number) => {
-      // Header Banner
-      d.setFillColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
-      d.rect(11, 11, pageWidth - 22, 40, 'F');
-
-      // Header Title
-      d.setFontSize(20);
-      d.setFont('helvetica', 'bold');
-      d.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      d.text('OJAS - JOB APPLICATION FORM', pageWidth / 2, y + 5, { align: 'center' });
-      
-      // Advertisement & Post Info
-      d.setFontSize(11);
-      d.setTextColor(70);
-      d.text(String(adTitle), pageWidth / 2, y + 15, { align: 'center' });
-      
-      d.setFontSize(13);
-      d.setFont('helvetica', 'bold');
-      d.setTextColor(0);
-      d.text(`Post: ${postName}`, pageWidth / 2, y + 23, { align: 'center' });
-
-      d.setFontSize(9);
-      d.setFont('helvetica', 'normal');
-      d.setTextColor(100);
-      d.text(`Application ID: ${appl.Appl_ID} | Date: ${formatDate(appl.Apply_Date)}`, pageWidth / 2, y + 30, { align: 'center' });
-    };
-
-    let yPos = 20;
-    drawHeader(doc, yPos);
-    yPos += 45;
-
-    // Photo
-    const photoY = yPos;
-    if (photoBase64 && photoBase64.startsWith('data:image/')) {
-      try {
-        const mimeType = photoBase64.split(';')[0].split(':')[1];
-        const format = mimeType.split('/')[1].toUpperCase();
-        doc.addImage(photoBase64, format === 'PNG' ? 'PNG' : 'JPEG', 20, photoY, 35, 45);
-        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.setLineWidth(0.5);
-        doc.rect(20, photoY, 35, 45);
-      } catch (e) {
-        console.error('Error adding photo to PDF:', e);
-        doc.rect(20, photoY, 35, 45);
-        doc.text('Photo', 37.5, photoY + 22.5, { align: 'center' });
-      }
-    } else {
-      doc.setDrawColor(200);
-      doc.rect(20, photoY, 35, 45);
-      doc.text('Photo', 37.5, photoY + 22.5, { align: 'center' });
-    }
-
-    // Basic Info
-    doc.setFontSize(11);
-    doc.setTextColor(0);
-    const infoX = 65;
-    let infoY = photoY + 5;
-    
-    const drawInfoLine = (label: string, value: string) => {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(label, infoX, infoY);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(0);
-      doc.text(String(value), infoX + 45, infoY);
-      infoY += 8;
-    };
-
-    drawInfoLine('Candidate Name:', String(applicantProfile?.Candidate_Name || ''));
-    drawInfoLine('Father\'s Name:', String(applicantProfile?.Father_Name || ''));
-    drawInfoLine('Mother\'s Name:', String(applicantProfile?.Mother_Name || ''));
-    drawInfoLine('Gender:', tc(applicantProfile?.Gender));
-    drawInfoLine('Date of Birth:', String(formatDate(applicantProfile?.DOB || '')));
-    
-    yPos = Math.max(photoY + 55, infoY + 5);
-
-    const drawSectionHeader = (title: string, y: number) => {
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-      doc.text(title, 20, y);
-      doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
-      doc.setLineWidth(0.8);
-      doc.line(20, y + 2, pageWidth - 20, y + 2);
-      return y + 10;
-    };
-
-    // Personal Details
-    yPos = drawSectionHeader('Personal Details', yPos);
-
-    const personalData = [
-      ["Father's Name", String(applicantProfile?.Father_Name || ''), "Mother's Name", String(applicantProfile?.Mother_Name || '')],
-      ['Email', String(applicantProfile?.Email_ID || ''), 'Mobile', String(applicantProfile?.Mobile || '')],
-      ['Caste Category', tc(additionalInfo?.Caste_Category), 'Is CG Domicile', tc(additionalInfo?.Is_CG)],
-      ['Locality', tc(additionalInfo?.Locality), 'Is PwD', tc(additionalInfo?.Is_PWD)],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      body: personalData,
-      theme: 'plain',
-      styles: { fontSize: 10, cellPadding: 2 },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 35, textColor: primaryColor },
-        1: { cellWidth: 55 },
-        2: { fontStyle: 'bold', cellWidth: 35, textColor: primaryColor },
-        3: { cellWidth: 55 },
-      }
-    });
-
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-
-    // Address Details
-    if (yPos > pageHeight - 60) { doc.addPage(); yPos = 25; }
-    yPos = drawSectionHeader('Address Details', yPos);
-
-    const addressData = [
-      ['Permanent Address', `${addressInfo?.Perm_Address || ''}\n${addressInfo?.Perm_Landmark || ''}\n${tc(addressInfo?.Perm_District)}, ${tc(addressInfo?.Perm_State)} - ${addressInfo?.Perm_Pincode || ''}`],
-      ['Current Address', `${addressInfo?.Curr_Address || ''}\n${addressInfo?.Curr_Landmark || ''}\n${tc(addressInfo?.Curr_District)}, ${tc(addressInfo?.Curr_State)} - ${addressInfo?.Curr_Pincode || ''}`],
-    ];
-
-    autoTable(doc, {
-      startY: yPos,
-      body: addressData,
-      theme: 'grid',
-      styles: { fontSize: 10, cellPadding: 3 },
-      columnStyles: {
-        0: { fontStyle: 'bold', cellWidth: 40, textColor: primaryColor },
-        1: { cellWidth: 140 },
-      }
-    });
-
-    yPos = (doc as any).lastAutoTable.finalY + 15;
-
-    // Qualifications
-    if (qualifications && qualifications.length > 0) {
-      if (yPos > pageHeight - 60) { doc.addPage(); yPos = 25; }
-      yPos = drawSectionHeader('Educational Qualifications', yPos);
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Type', 'Course', 'Board/University', 'Year', 'Result', '%/CGPA']],
-        body: qualifications.map(q => [
-          tc(q.Qualification_Type),
-          String(q.Course_Name || ''),
-          String(q.Board_Name || ''),
-          String(q.Pass_Year || ''),
-          tc(q.Result_Status),
-          String(q.Percentage || '')
-        ]),
-        theme: 'striped',
-        headStyles: { fillColor: primaryColor },
-        styles: { fontSize: 9 }
-      });
-
-      yPos = (doc as any).lastAutoTable.finalY + 15;
-    }
-
-    // Experience
-    if (experiences && experiences.length > 0) {
-      if (yPos > pageHeight - 60) { doc.addPage(); yPos = 25; }
-      yPos = drawSectionHeader('Work Experience', yPos);
-
-      autoTable(doc, {
-        startY: yPos,
-        head: [['Employer', 'Post Held', 'From', 'To', 'Type']],
-        body: experiences.map(e => [
-          String(e.Employer_Name || ''),
-          String(e.Post_Held || ''),
-          String(formatDate(e.Start_Date)),
-          String(e.Currently_Working === 'Yes' ? 'Present' : formatDate(e.End_Date)),
-          tc(e.Employment_Type)
-        ]),
-        theme: 'striped',
-        headStyles: { fillColor: primaryColor },
-        styles: { fontSize: 9 }
-      });
-
-      yPos = (doc as any).lastAutoTable.finalY + 15;
-    }
-
-    // Signature and Declaration
-    if (yPos > pageHeight - 80) { doc.addPage(); yPos = 25; }
-    
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text('Declaration:', 20, yPos);
-    yPos += 8;
-    
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(50);
-    doc.text('I hereby declare that all the information provided in this application is true, complete and correct to the best of my knowledge and belief. I understand that in the event of any information being found false or incorrect at any stage, my candidacy/appointment is liable to be cancelled/terminated.', 20, yPos, { maxWidth: pageWidth - 40 });
-    yPos += 25;
-
-    // Signature
-    const signX = pageWidth - 60;
-    if (signBase64 && signBase64.startsWith('data:image/')) {
-      try {
-        const mimeType = signBase64.split(';')[0].split(':')[1];
-        const format = mimeType.split('/')[1].toUpperCase();
-        doc.addImage(signBase64, format === 'PNG' ? 'PNG' : 'JPEG', signX, yPos, 40, 15);
-        doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-        doc.setLineWidth(0.5);
-        doc.rect(signX, yPos, 40, 15);
-      } catch (e) {
-        console.error('Error adding signature to PDF:', e);
-        doc.rect(signX, yPos, 40, 15);
-      }
-    } else {
-      doc.setDrawColor(200);
-      doc.rect(signX, yPos, 40, 15);
-    }
-    yPos += 20;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0);
-    doc.text(String(applicantProfile?.Candidate_Name || ''), signX + 20, yPos, { align: 'center' });
-    yPos += 5;
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(100);
-    doc.text(`Date: ${String(formatDate(appl.Apply_Date))}`, signX + 20, yPos, { align: 'center' });
-
-    // Include Certificates if requested
+    let certificateImages: { label: string; base64: string }[] = [];
     if (includeCertificates) {
+      onProgress('Processing certificates...', 40);
       const certificates = [
-        { label: 'ID Proof', url: applicantProfile?.ID_Doc },
-        { label: 'DOB Proof', url: applicantProfile?.DOB_Doc },
-        { label: 'Domicile Certificate', url: additionalInfo?.Domicile_Certificate_URL },
-        { label: 'Caste Certificate', url: additionalInfo?.Caste_Certificate_URL },
-        { label: 'PwD Certificate', url: additionalInfo?.PwD_Certificate_URL },
+        { label: t('signup.id_proof'), url: applicantProfile?.ID_Doc },
+        { label: t('signup.dob_proof'), url: applicantProfile?.DOB_Doc },
+        { label: t('profile.form.domicile_cert'), url: additionalInfo?.Domicile_Certificate_URL },
+        { label: t('profile.form.caste_cert'), url: additionalInfo?.Caste_Certificate_URL },
+        { label: t('profile.form.pwd_cert'), url: additionalInfo?.PwD_Certificate_URL },
       ].filter(c => c.url);
 
       for (const cert of certificates) {
-        onProgress(`Processing ${cert.label}...`, 80);
         if (cert.url) {
           try {
-            const certBase64 = await sheetService.proxyImage(cert.url);
-            if (certBase64 && certBase64.startsWith('data:image/')) {
-              doc.addPage();
-              const mimeType = certBase64.split(';')[0].split(':')[1];
-              const format = mimeType.split('/')[1].toUpperCase();
-              
-              const imgW = pageWidth - 40;
-              const imgH = pageHeight - 60;
-              
-              doc.setFontSize(16);
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-              doc.text(cert.label, pageWidth / 2, 30, { align: 'center' });
-              
-              doc.addImage(certBase64, format === 'PNG' ? 'PNG' : 'JPEG', 20, 40, imgW, imgH, undefined, 'FAST');
-            } else if (certBase64 && certBase64.startsWith('data:application/pdf')) {
-              // Handle Base64 PDF
-              doc.addPage();
-              doc.setFontSize(16);
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-              doc.text(cert.label, pageWidth / 2, 50, { align: 'center' });
-              
-              doc.setFontSize(12);
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(0);
-              doc.text('This document is a PDF and could not be directly embedded in this file.', pageWidth / 2, 70, { align: 'center' });
-              doc.setTextColor(30, 64, 175);
-              doc.text('Click here to view original document', pageWidth / 2, 85, { align: 'center' });
-              doc.link(pageWidth / 2 - 50, 80, 100, 10, { url: cert.url });
-            } else if (cert.url.toLowerCase().endsWith('.pdf')) {
-              // If it's a PDF, we can't easily merge with jsPDF without extra libs, 
-              // so we add a page with a link
-              doc.addPage();
-              doc.setFontSize(16);
-              doc.setFont('helvetica', 'bold');
-              doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-              doc.text(cert.label, pageWidth / 2, 50, { align: 'center' });
-              
-              doc.setFontSize(12);
-              doc.setFont('helvetica', 'normal');
-              doc.setTextColor(0);
-              doc.text('This document is a PDF and could not be directly embedded in this file.', pageWidth / 2, 70, { align: 'center' });
-              doc.setTextColor(30, 64, 175);
-              doc.text('Click here to view original document', pageWidth / 2, 85, { align: 'center' });
-              doc.link(pageWidth / 2 - 50, 80, 100, 10, { url: cert.url });
+            const base64 = await sheetService.proxyImage(cert.url);
+            if (base64 && base64.startsWith('data:image/')) {
+              certificateImages.push({ label: cert.label, base64 });
             }
-          } catch (err) {
-            console.error(`Error adding certificate ${cert.label}:`, err);
+          } catch (e) {
+            console.error(`Error loading certificate ${cert.label}:`, e);
           }
         }
       }
     }
 
-    // Final layout check
-    const totalPages = doc.internal.pages.length - 1;
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      drawPageLayout(doc, i, totalPages);
-    }
+    onProgress('Preparing document...', 70);
     
-    onProgress('Download complete!', 100);
-    doc.save(`Application_${appl.Appl_ID}${includeCertificates ? '_Complete' : ''}.pdf`);
+    // Ensure Noto Sans Devanagari is loaded
+    try {
+      await document.fonts.load('12px "Noto Sans Devanagari"');
+      await document.fonts.ready;
+    } catch (e) {
+      console.warn('Font loading failed, continuing with fallback:', e);
+    }
+
+    const container = document.createElement('div');
+    container.id = 'pdf-generation-container';
+    container.style.position = 'absolute';
+    container.style.left = '0';
+    container.style.top = '10000px'; 
+    container.style.width = '800px';
+    container.style.backgroundColor = '#ffffff';
+    container.style.visibility = 'visible';
+    container.style.opacity = '1';
+    container.style.zIndex = '-999999';
+    container.style.pointerEvents = 'none';
+    container.style.display = 'block';
+    
+    const htmlContent = `
+      <style>
+        .pdf-content-wrapper {
+          font-family: 'Noto Sans Devanagari', 'Poppins', 'Inter', 'Helvetica', Arial, sans-serif;
+          line-height: 1.5;
+          color: #333;
+          background-color: #ffffff;
+          width: 720px;
+          margin: 0;
+          padding: 0;
+        }
+        .pdf-page {
+          margin: 0;
+          padding: 2.5rem;
+          background-color: #ffffff !important;
+          position: relative;
+          width: 100%;
+        }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        img { display: block; max-width: 100%; height: auto; page-break-inside: avoid; }
+        .header {
+          text-align: center;
+          border-bottom: 2px solid #1e3a8a;
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+        }
+        .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; color: #1e3a8a; font-weight: 700; }
+        .header h2 { margin: 5px 0; font-size: 16px; color: #4b5563; font-weight: 600; }
+        .header p { margin: 5px 0; font-size: 13px; font-weight: bold; }
+        
+        .section { margin-bottom: 20px; clear: both; page-break-inside: avoid; }
+        .section-title {
+          background: #f1f5f9;
+          padding: 8px 12px;
+          font-weight: bold;
+          font-size: 15px;
+          border-left: 5px solid #1e3a8a;
+          margin-bottom: 12px;
+          text-transform: uppercase;
+          color: #0f172a;
+        }
+        
+        .field { margin-bottom: 8px; font-size: 13px; clear: both; }
+        .label { font-weight: bold; color: #475569; display: inline-block; width: 150px; float: left; }
+        .value { display: block; margin-left: 160px; word-break: break-word; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; clear: both; page-break-inside: auto; }
+        table tr { page-break-inside: avoid; page-break-after: auto; }
+        table th, table td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+        table th { background: #f8fafc; font-weight: bold; color: #0f172a; }
+        
+        .footer-section {
+          page-break-inside: avoid;
+        }
+        .photo-sign-container {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 20px;
+          gap: 20px;
+        }
+        .photo-box, .sign-box {
+          text-align: center;
+          width: 140px;
+          page-break-inside: avoid;
+        }
+        .photo-img {
+          width: 120px;
+          height: 150px;
+          border: 1px solid #94a3b8;
+          object-fit: cover;
+          margin-bottom: 5px;
+          background: #f8fafc;
+        }
+        .sign-img {
+          width: 140px;
+          height: 45px;
+          border: 1px solid #94a3b8;
+          object-fit: contain;
+          margin-bottom: 5px;
+          background: #f8fafc;
+        }
+        
+        .declaration {
+          margin-top: 25px;
+          font-size: 12px;
+          font-style: italic;
+          border: 1px solid #e2e8f0;
+          padding: 12px;
+          background: #f8fafc;
+          border-radius: 4px;
+          color: #334155;
+          page-break-inside: avoid;
+        }
+
+        .cert-page {
+          page-break-before: always;
+          margin: 0;
+          padding: 2rem;
+          text-align: center;
+          background: white;
+        }
+        .cert-img {
+          max-width: 100%;
+          max-height: 900px;
+          border: 1px dashed #94a3b8;
+          margin-top: 20px;
+          object-fit: contain;
+          background: #f8fafc;
+        }
+      </style>
+      <div class="pdf-content-wrapper">
+        <div class="pdf-page">
+          <div class="header">
+            <h1>${t('nav.system_name')}</h1>
+            <h2>${adTitle}</h2>
+            <p>${t('office.table.post')}: ${postName}</p>
+            <div style="margin-top: 10px; font-size: 12px; color: #475569; font-weight: 500;">
+              ${t('dashboard.appl_id')}: ${appl.Appl_ID} | ${t('common.date')}: ${formatDate(appl.Apply_Date)}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">${t('office.review_modal.personal_details')}</div>
+            <div style="display: flex; gap: 20px;">
+              <div style="flex: 1;">
+                <div class="field"><span class="label">${t('signup.candidate_name')}:</span> <span class="value">${applicantProfile?.Candidate_Name || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('signup.father_name')}:</span> <span class="value">${applicantProfile?.Father_Name || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('signup.mother_name')}:</span> <span class="value">${applicantProfile?.Mother_Name || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('profile.form.dob')}:</span> <span class="value">${formatDate(applicantProfile?.DOB)}</span></div>
+                <div class="field"><span class="label">${t('profile.form.gender')}:</span> <span class="value">${applicantProfile?.Gender || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('profile.form.category')}:</span> <span class="value">${additionalInfo?.Caste_Category || t('manage.na')}</span></div>
+                <div class="field">
+                  <span class="label">${t('apply.domicile_cg')}:</span> 
+                  <span class="value">
+                    ${additionalInfo?.Is_CG === 'Yes' ? t('constants.Yes') : t('constants.No')} 
+                    (${additionalInfo?.Is_CG === 'Yes' ? additionalInfo?.Domicile_District : additionalInfo?.Domicile_State || t('manage.na')})
+                  </span>
+                </div>
+                <div class="field">
+                  <span class="label">${t('apply.is_pwd')}:</span> 
+                  <span class="value">
+                    ${additionalInfo?.Is_PWD === 'Yes' ? t('constants.Yes') : t('constants.No')} 
+                    ${additionalInfo?.Is_PWD === 'Yes' ? `(${additionalInfo?.PwD_Percentage || '0'}%)` : ''}
+                  </span>
+                </div>
+                <div class="field"><span class="label">${t('profile.form.mobile')}:</span> <span class="value">${applicantProfile?.Mobile || t('manage.na')}</span></div>
+                <div class="field"><span class="label">${t('profile.form.email')}:</span> <span class="value">${applicantProfile?.Email_ID || t('manage.na')}</span></div>
+              </div>
+              <div class="photo-box">
+                ${photoBase64 ? `<img src="${photoBase64}" class="photo-img" />` : `<div class="photo-img" style="display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8;">${t('office.review_modal.photo')}</div>`}
+              </div>
+            </div>
+          </div>
+ 
+          <div class="section">
+            <div class="section-title">${t('office.review_modal.addr_details')}</div>
+            <div style="display: flex; gap: 20px;">
+              <div class="field" style="flex: 1;">
+                <span class="label">${t('address.current')}:</span>
+                <div class="value">
+                  ${addressInfo?.Curr_Address || t('manage.na')}, ${addressInfo?.Curr_District || ''}, ${addressInfo?.Curr_State || ''} - ${addressInfo?.Curr_Pincode || ''}
+                </div>
+              </div>
+              <div class="field" style="flex: 1;">
+                <span class="label">${t('address.permanent')}:</span>
+                <div class="value">
+                  ${addressInfo?.Perm_Address || t('manage.na')}, ${addressInfo?.Perm_District || ''}, ${addressInfo?.Perm_State || ''} - ${addressInfo?.Perm_Pincode || ''}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">${t('office.review_modal.edu_details')}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>${t('qual.table.exam')}</th>
+                  <th>${t('qual.table.board')}</th>
+                  <th>${t('qual.table.year')}</th>
+                  <th>${t('qual.table.subject')}</th>
+                  <th>%</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${quals.length > 0 ? quals.map(q => `
+                  <tr>
+                    <td>${q.Course_Name}</td>
+                    <td>${q.Board_Name}</td>
+                    <td>${q.Pass_Year}</td>
+                    <td>${q.Qualification_Type}</td>
+                    <td>${q.Percentage}%</td>
+                  </tr>
+                `).join('') : `<tr><td colspan="5" style="text-align:center;">${t('common.no_data')}</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="section">
+            <div class="section-title">${t('office.review_modal.exp_details')}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>${t('exp.table.employer')}</th>
+                  <th>${t('exp.table.post')}</th>
+                  <th>${t('exp.table.start')}</th>
+                  <th>${t('exp.table.end')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${exps.length > 0 ? exps.map(e => `
+                  <tr>
+                    <td>${e.Employer_Name}</td>
+                    <td>${e.Post_Held}</td>
+                    <td>${formatDate(e.Start_Date)}</td>
+                    <td>${e.Currently_Working === 'Yes' ? t('apply.present') : formatDate(e.End_Date)}</td>
+                  </tr>
+                `).join('') : `<tr><td colspan="4" style="text-align:center;">${t('office.review_modal.no_exp')}</td></tr>`}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="footer-section">
+            <div class="declaration">
+              <p style="margin-top: 0;"><strong>${t('apply.declaration_title')}:</strong></p>
+              <p style="margin-bottom: 0;">${t('apply.declaration_text')}</p>
+            </div>
+
+            <div class="photo-sign-container">
+              <div>
+                <p style="font-size: 13px; margin: 4px 0;">${t('common.date')}: ${formatDate(appl.Apply_Date)}</p>
+                <p style="font-size: 13px; margin: 4px 0;">${t('common.place')}: __________________</p>
+              </div>
+              <div class="sign-box">
+                ${signBase64 ? `<img src="${signBase64}" class="sign-img" />` : `<div class="sign-img" style="display: flex; align-items: center; justify-content: center; font-size: 12px; color: #94a3b8;">${t('office.review_modal.sign')}</div>`}
+                <p style="font-weight: bold; font-size: 14px; margin-top: 8px;">${applicantProfile?.Candidate_Name || ''}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        ${includeCertificates && certificateImages.length > 0 ? certificateImages.map(cert => `
+          <div class="cert-page">
+            <div class="section-title">${cert.label}</div>
+            <div style="display: flex; align-items: center; justify-content: center; margin-top: 1rem;">
+              <img src="${cert.base64}" class="cert-img" />
+            </div>
+          </div>
+        `).join('') : ''}
+      </div>
+    `;
+
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
+
+    try {
+      onProgress('Preparing document...', 90);
+      
+      const opt = {
+        margin: 0,
+        filename: `Application_${appl.Appl_ID}${includeCertificates ? '_Complete' : ''}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true, 
+          logging: false,
+          letterRendering: true,
+          allowTaint: false,
+          backgroundColor: '#ffffff',
+          width: 720
+        },
+        jsPDF: { 
+          unit: 'px' as const, 
+          format: [720, 1018] as any, // Standard A4 pixel ratio for better control
+          orientation: 'portrait' as const,
+          compress: true
+        },
+        pagebreak: { mode: ['css', 'legacy'] }
+      };
+
+      // Pass HTML content directly to html2pdf instead of DOM element
+      // This often works better for off-screen rendering
+      await html2pdf().set(opt).from(htmlContent).save();
+    } catch (err) {
+      console.error('PDF Generation Error:', err);
+      throw err;
+    } finally {
+      // Cleanup the container if it was created
+      const element = document.getElementById('pdf-generation-container');
+      if (element && element.parentNode) {
+        element.parentNode.removeChild(element);
+      }
+      onProgress('Download complete!', 100);
+    }
   }
 };
+

@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { sheetService } from '../services/sheetService';
 import { useProgress } from '../context/ProgressContext';
 import { Application, Advertisement, Post, GeneralUser, AdditionalInfo, AddressInfo, QualificationInfo, ExperienceInfo, Claim } from '../types';
-import { FileText, Download, Trash2, Search, Filter, AlertTriangle, Loader2, ChevronLeft, Eye, Printer } from 'lucide-react';
+import { FileText, Download, Trash2, Search, Filter, AlertTriangle, Loader2, ChevronLeft, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { formatDate, translateConstant } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { pdfService } from '../services/pdfService';
-import { printService } from '../services/printService';
 
 const ManageApplications: React.FC = () => {
   const { t } = useTranslation();
@@ -188,52 +187,9 @@ const ManageApplications: React.FC = () => {
     }
   };
 
-  const handlePrint = async (appl: Application) => {
-    setIsGeneratingPDF(appl.Appl_ID);
-    startProgress('Preparing for printing...');
-    try {
-      const [addInfos, addrInfos, qualifications, experiences] = await Promise.all([
-        sheetService.getAll<AdditionalInfo>('Additional_Info'),
-        sheetService.getAll<AddressInfo>('Address_Info'),
-        sheetService.getAll<QualificationInfo>('Qualification_Info'),
-        sheetService.getAll<ExperienceInfo>('Experience_Info'),
-      ]);
-
-      const additionalInfo = addInfos.find(i => String(i.Appl_ID) === String(appl.Appl_ID));
-      const addressInfo = addrInfos.find(i => String(i.Appl_ID) === String(appl.Appl_ID));
-      const applQuals = qualifications.filter(q => String(q.Appl_ID) === String(appl.Appl_ID));
-      const applExps = experiences.filter(e => String(e.Appl_ID) === String(appl.Appl_ID));
-      
-      const userProfile = users.find(u => String(u.User_ID) === String(appl.User_ID));
-      const ad = ads.find(a => String(a.Adv_ID) === String(appl.Adv_ID));
-      const post = posts.find(p => String(p.Post_ID) === String(appl.Post_ID));
-
-      if (!userProfile) throw new Error('User profile not found');
-
-      await printService.generatePrintableApplication(
-        appl,
-        userProfile,
-        ad,
-        post ? { ...post, Post_Name: post.Post_Name } : undefined,
-        additionalInfo || null,
-        addressInfo || null,
-        applQuals,
-        applExps,
-        t,
-        (msg, prog) => updateProgress(prog, msg)
-      );
-    } catch (error) {
-      console.error('Print view error:', error);
-      toast.error('Failed to prepare print view');
-    } finally {
-      setIsGeneratingPDF(null);
-      stopProgress();
-    }
-  };
-
   const downloadPDF = async (appl: Application) => {
     setIsGeneratingPDF(appl.Appl_ID);
-    startProgress('Preparing application PDF...');
+    startProgress('Preparing application PDF with documents...');
     try {
       const [addInfos, addrInfos, qualifications, experiences] = await Promise.all([
         sheetService.getAll<AdditionalInfo>('Additional_Info'),
@@ -260,8 +216,8 @@ const ManageApplications: React.FC = () => {
         addressInfo || null,
         applQuals,
         applExps,
-        ad?.Title || 'Advertisement',
-        post?.Post_Name || 'Post',
+        ad?.Title || t('dashboard.advertisement'),
+        post?.Post_Name || t('dashboard.post'),
         t,
         {
           includeCertificates: true,
@@ -421,21 +377,12 @@ const ManageApplications: React.FC = () => {
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => downloadPDF(app)}
-                            disabled={isGeneratingPDF === app.Appl_ID}
+                            disabled={!!isGeneratingPDF}
                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold disabled:opacity-50"
-                            title="Download PDF"
+                            title={t('manage_applications.pdf_full', 'Application + Documents')}
                           >
-                            {isGeneratingPDF === app.Appl_ID ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                            {isGeneratingPDF === app.Appl_ID ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
                             {t('manage_applications.pdf')}
-                          </button>
-                          <button
-                            onClick={() => handlePrint(app)}
-                            disabled={isGeneratingPDF === app.Appl_ID}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold disabled:opacity-50"
-                            title="Print Application"
-                          >
-                            <Printer className="w-4 h-4" />
-                            {t('common.print', 'Print')}
                           </button>
                           <button
                             onClick={() => handleDelete(app)}

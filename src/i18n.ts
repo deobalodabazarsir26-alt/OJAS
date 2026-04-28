@@ -41,6 +41,8 @@ const resources = {
         "not_specified": "Not Specified",
         "unknown_office": "Unknown Office",
         "unknown_dept": "Unknown Department",
+        "unknown_ad": "Unknown Advertisement",
+        "unknown_post": "Unknown Post",
         "translate_to_hindi": "Translate to Hindi",
         "download": "Download",
         "pdf": "PDF",
@@ -244,7 +246,10 @@ const resources = {
           "mobile": "Mobile Number",
           "email": "Email Address",
           "category": "Category",
-          "id_proof": "ID Proof"
+          "id_proof": "ID Proof",
+          "domicile_cert": "Domicile Certificate",
+          "caste_cert": "Caste Certificate",
+          "pwd_cert": "PwD Certificate"
         }
       },
       "dashboard": {
@@ -277,7 +282,8 @@ const resources = {
         "claim_pending": "Claim Pending",
         "claim_verified": "Claim Verified",
         "claim_rejected": "Claim Rejected",
-        "submitted": "Submitted"
+        "submitted": "Submitted",
+        "pdf_full": "Application + Documents"
       },
       "manage": {
         "title": "Management",
@@ -549,6 +555,7 @@ const resources = {
         },
         "no_apps_found": "No applications found matching the criteria.",
         "pdf": "PDF",
+        "pdf_full": "Application + Docs",
         "delete": "Delete",
         "id": "ID",
         "post": "Post"
@@ -626,6 +633,7 @@ const resources = {
           "title": "Review Application",
           "candidate": "Candidate",
           "count_info": "{{current}} of {{total}}",
+          "app_pdf": "Download App Only",
           "full_pdf": "Full PDF",
           "gen_pdf": "Generate Full PDF (with certificates)...",
           "generating": "Generating...",
@@ -699,6 +707,8 @@ const resources = {
         "not_specified": "निदिष्ट नहीं है",
         "unknown_office": "अज्ञात कार्यालय",
         "unknown_dept": "अज्ञात विभाग",
+        "unknown_ad": "अज्ञात विज्ञापन",
+        "unknown_post": "अज्ञात पद",
         "translate_to_hindi": "हिंदी में अनुवाद करें",
         "download": "डाउनलोड",
         "pdf": "पीडीएफ",
@@ -902,7 +912,10 @@ const resources = {
           "mobile": "मोबाइल नंबर",
           "email": "ईमेल पता",
           "category": "श्रेणी",
-          "id_proof": "पहचान प्रमाण"
+          "id_proof": "पहचान प्रमाण",
+          "domicile_cert": "निवास प्रमाण पत्र",
+          "caste_cert": "जाति प्रमाण पत्र",
+          "pwd_cert": "दिव्यांगता प्रमाण पत्र"
         }
       },
       "dashboard": {
@@ -935,7 +948,8 @@ const resources = {
         "claim_pending": "दावा लंबित है",
         "claim_verified": "दावा सत्यापित",
         "claim_rejected": "दावा अस्वीकृत",
-        "submitted": "जमा कर दिया गया"
+        "submitted": "जमा कर दिया गया",
+        "pdf_full": "आवेदन + दस्तावेज"
       },
       "manage": {
         "title": "प्रबंधन",
@@ -1231,6 +1245,7 @@ const resources = {
           "title": "आवेदन की समीक्षा करें",
           "candidate": "उम्मीदवार",
           "count_info": "{{total}} में से {{current}}",
+          "app_pdf": "केवल आवेदन डाउनलोड करें",
           "full_pdf": "पूर्ण पीडीएफ",
           "gen_pdf": "पूर्ण पीडीएफ जनरेट करें (प्रमाणपत्रों के साथ)...",
           "generating": "जनरेट हो रहा है...",
@@ -1285,6 +1300,7 @@ const resources = {
         "delete_confirm": "क्या आप वाकई आवेदन {{id}} हटाना चाहते हैं? यह संबंधित सभी दस्तावेजों और जानकारी को भी हटा देगा।",
         "no_apps_found": "मानदंडों से कोई आवेदन नहीं मिला।",
         "pdf": "पीडीएफ",
+        "pdf_full": "आवेदन + दस्तावेज़",
         "delete": "हटाएं",
         "id": "आईडी",
         "post": "पद",
