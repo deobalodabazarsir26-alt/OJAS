@@ -347,6 +347,7 @@ const ManageConstants: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
             <tr>
+              <th className="px-6 py-3 w-16 text-center">S.No.</th>
               <th className="px-6 py-3">{t('manage.category')}</th>
               <th className="px-6 py-3">{t('manage.value')}</th>
               <th className="px-6 py-3">{t('manage.last_updated')}</th>
@@ -357,6 +358,7 @@ const ManageConstants: React.FC = () => {
             {filteredConstants.length > 0 ? (
               filteredConstants.map((c, index) => (
                 <tr key={`${c.Constant_ID}-${index}`} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">{index + 1}</td>
                   <td className="px-6 py-4">
                     <span className="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full font-medium font-sans">
                       {c.Category}

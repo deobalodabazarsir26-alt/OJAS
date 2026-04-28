@@ -160,6 +160,7 @@ const ManageUsers: React.FC = () => {
           <table className="w-full text-left font-hindi-support">
             <thead>
               <tr className="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                <th className="px-6 py-4 font-semibold uppercase text-center w-16">S.No.</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('manage.username')}</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('manage.category')}</th>
                 <th className="px-6 py-4 font-semibold uppercase">{t('dashboard.status')}</th>
@@ -169,6 +170,9 @@ const ManageUsers: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               {filteredUsers.map((user, index) => (
                 <tr key={`${user.User_ID}-${index}`} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">
+                    {index + 1}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
@@ -176,7 +180,6 @@ const ManageUsers: React.FC = () => {
                       </div>
                       <div>
                         <div className="font-bold text-gray-900">{user.User_Name}</div>
-                        <div className="text-xs text-gray-500">{t('manage.id')}: {user.User_ID}</div>
                       </div>
                     </div>
                   </td>

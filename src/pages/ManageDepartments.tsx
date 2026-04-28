@@ -192,7 +192,7 @@ const ManageDepartments: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
               <tr>
-                <th className="px-6 py-3">{t('manage.id')}</th>
+                <th className="px-6 py-3">S.No.</th>
                 <th className="px-6 py-3">{t('admin.dept_name')}</th>
                 <th className="px-6 py-3">{t('signup.type')}</th>
                 <th className="px-6 py-3 text-right">{t('dashboard.actions')}</th>
@@ -200,9 +200,9 @@ const ManageDepartments: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredDepts.length > 0 ? (
-                filteredDepts.map((d) => (
+                filteredDepts.map((d, index) => (
                   <tr key={d.Dept_ID} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-mono text-gray-400">{d.Dept_ID}</td>
+                    <td className="px-6 py-4 text-sm font-bold text-gray-400">{index + 1}</td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">{d.Dept_Name}</td>
                     <td className="px-6 py-4">
                       <span className="bg-gray-100 text-gray-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">

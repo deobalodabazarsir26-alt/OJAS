@@ -508,6 +508,7 @@ const ManageAdvertisements: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold font-hindi-support">
             <tr>
+              <th className="px-6 py-3 w-16 text-center">S.No.</th>
               <th className="px-6 py-3">{t('dashboard.advertisement')}</th>
               <th className="px-6 py-3">{t('manage.office_dept')}</th>
               <th className="px-6 py-3">{t('manage.dates')}</th>
@@ -529,6 +530,7 @@ const ManageAdvertisements: React.FC = () => {
 
                 return (
                   <tr key={ad.Adv_ID} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">{index + 1}</td>
                     <td className="px-6 py-4">
                       <div className="font-medium text-gray-900">{ad.Title}</div>
                       <div className="text-xs text-gray-500">{t('ad_details.ref_no')}: {ad.Letter_No}</div>

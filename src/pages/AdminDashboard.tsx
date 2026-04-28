@@ -80,10 +80,11 @@ const AdminDashboard: React.FC = () => {
       // Add recent applications (last 10)
       applsData.slice(-10).forEach(app => {
         if (app.T_STMP_ADD) {
+          const ad = adsData.find(a => String(a.Adv_ID) === String(app.Adv_ID));
           activities.push({
             id: `app-${app.Appl_ID}`,
             type: 'application',
-            title: t('admin.new_appl_received', { id: app.Adv_ID }),
+            title: ad ? t('admin.new_appl_received', { id: ad.Title }) : t('admin.new_appl_received', { id: '...' }),
             timestamp: app.T_STMP_ADD
           });
         }

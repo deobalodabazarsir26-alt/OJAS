@@ -54,8 +54,8 @@ const ManageApplications: React.FC = () => {
     fetchData();
   }, []);
 
-  const handleDelete = async (appl: Application) => {
-    if (!window.confirm(t('manage_applications.delete_confirm', { id: appl.Appl_ID }))) {
+  const handleDelete = async (appl: Application, index: number) => {
+    if (!window.confirm(t('manage_applications.delete_confirm', { id: index + 1 }))) {
       return;
     }
 
@@ -290,7 +290,7 @@ const ManageApplications: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
               <tr>
-                <th className="px-6 py-3">{t('manage_applications.id')}</th>
+                <th className="px-6 py-3 w-16 text-center">S.No.</th>
                 <th className="px-6 py-3">{t('manage_applications.candidate')}</th>
                 <th className="px-6 py-3">{t('manage_applications.post')}</th>
                 <th className="px-6 py-3">{t('manage_applications.date')}</th>
@@ -305,7 +305,7 @@ const ManageApplications: React.FC = () => {
                   </td>
                 </tr>
               ) : filteredApplications.length > 0 ? (
-                filteredApplications.map((app) => {
+                filteredApplications.map((app, index) => {
                   const user = users.find(u => String(u.User_ID) === String(app.User_ID));
                   const post = posts.find(p => String(p.Post_ID) === String(app.Post_ID));
                   const ad = ads.find(a => String(a.Adv_ID) === String(app.Adv_ID));
@@ -333,10 +333,10 @@ const ManageApplications: React.FC = () => {
                       className="hover:bg-gray-50"
                       layout
                     >
-                      <td className="px-6 py-4 text-sm font-mono">
-                        {app.Appl_ID}
+                      <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">
+                        {index + 1}
                         {phase && (
-                          <div className={`mt-1 text-[10px] px-1.5 py-0.5 rounded inline-block font-bold uppercase tracking-wider ${phase.color}`}>
+                          <div className={`mt-1 text-[10px] px-1.5 py-0.5 rounded block font-bold uppercase tracking-wider ${phase.color}`}>
                             {phase.label}
                           </div>
                         )}
@@ -364,7 +364,7 @@ const ManageApplications: React.FC = () => {
                             {t('manage_applications.pdf')}
                           </button>
                           <button
-                            onClick={() => handleDelete(app)}
+                            onClick={() => handleDelete(app, index)}
                             disabled={isDeleting === app.Appl_ID}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1 text-sm font-bold disabled:opacity-50"
                             title="Delete"

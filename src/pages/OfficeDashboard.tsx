@@ -865,6 +865,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                 <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                   <tr>
+                    <th className="px-6 py-3 w-16 text-center">S.No.</th>
                     <th className="px-6 py-3">{t('office.table.ref_no')}</th>
                     <th className="px-6 py-3">{t('office.table.title')}</th>
                     <th className="px-6 py-3">{t('office.table.period')}</th>
@@ -876,6 +877,7 @@ const OfficeDashboard: React.FC = () => {
                     {ads.map((ad, index) => {
                       return (
                         <tr key={`${ad.Adv_ID}-${index}`} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">{index + 1}</td>
                           <td className="px-6 py-4 text-sm font-mono">{ad.Letter_No}</td>
                           <td className="px-6 py-4 text-sm font-medium text-gray-900">{ad.Title}</td>
                           <td className="px-6 py-4 text-sm text-gray-600">
@@ -962,7 +964,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                 <thead className="bg-gray-50 text-[10px] uppercase text-gray-500 font-bold">
                   <tr>
-                    <th className="px-6 py-3">{t('office.table.app_id')}</th>
+                    <th className="px-6 py-3 w-16 text-center">S.No.</th>
                     <th className="px-6 py-3">{t('office.table.applicant')}</th>
                     <th className="px-6 py-3">{t('office.table.claim_reason')}</th>
                     <th className="px-6 py-3">{t('office.table.date')}</th>
@@ -976,7 +978,7 @@ const OfficeDashboard: React.FC = () => {
                       const candidate = allGeneralUsers.find(u => String(u.User_ID) === String(claim.User_ID));
                       return (
                         <tr key={idx} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 font-mono font-bold text-blue-600">{claim.Appl_ID}</td>
+                          <td className="px-6 py-4 font-bold text-gray-400 text-center">{idx + 1}</td>
                           <td className="px-6 py-4 font-bold text-gray-900">{candidate?.Candidate_Name || t('common.unknown', 'Unknown')}</td>
                           <td className="px-6 py-4 max-w-xs truncate">{claim.Description}</td>
                           <td className="px-6 py-4 text-gray-500">{formatDate(claim.T_STMP_ADD)}</td>
@@ -1072,7 +1074,7 @@ const OfficeDashboard: React.FC = () => {
               <table className="w-full text-left">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
                     <tr>
-                      <th className="px-6 py-3">{t('office.table.app_id')}</th>
+                      <th className="px-6 py-3 w-16 text-center">S.No.</th>
                       <th className="px-6 py-3">{t('office.table.candidate')}</th>
                       <th className="px-6 py-3">{t('office.table.post')}</th>
                       <th className="px-6 py-3">{t('office.table.status')}</th>
@@ -1080,12 +1082,12 @@ const OfficeDashboard: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {filteredApplications.map((app) => {
+                    {filteredApplications.map((app, index) => {
                          const post = allPosts.find(p => String(p.Post_ID) === String(app.Post_ID));
                          const applicant = allGeneralUsers?.find(u => String(u.User_ID) === String(app.User_ID));
                          return (
                            <tr key={app.Appl_ID} className="hover:bg-gray-50">
-                             <td className="px-6 py-4 text-sm font-mono">{app.Appl_ID}</td>
+                             <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">{index + 1}</td>
                              <td className="px-6 py-4 text-sm font-medium text-gray-900">
                                {applicant?.Candidate_Name || `User ID: ${app.User_ID}`}
                                {applicant?.Candidate_Name_HI && <p className="text-xs text-gray-500 font-normal">{applicant.Candidate_Name_HI}</p>}
@@ -1157,11 +1159,11 @@ const OfficeDashboard: React.FC = () => {
                     </button>
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">{t('office.review_modal.title')}: {viewingApplication.Appl_ID}</h3>
+                    <h3 className="text-xl font-bold">{t('office.review_modal.title')}</h3>
                     <p className="text-blue-100 text-sm">
-                      {t('office.review_modal.candidate')}: {applicantProfile?.Candidate_Name || t('common.loading', 'Loading...')} 
+                      <span className="font-bold mr-2">{t('office.table.app_id')}: #{filteredApplications.findIndex(a => String(a.Appl_ID) === String(viewingApplication.Appl_ID)) + 1}</span>
                       <span className="mx-2 opacity-50">|</span> 
-                      {t('office.review_modal.count_info', { current: filteredApplications.findIndex(a => String(a.Appl_ID) === String(viewingApplication.Appl_ID)) + 1, total: filteredApplications.length })}
+                      {t('office.review_modal.candidate')}: {applicantProfile?.Candidate_Name || t('common.loading', 'Loading...')} 
                     </p>
                   </div>
                 </div>
@@ -1552,7 +1554,7 @@ const OfficeDashboard: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-lg font-bold leading-tight">{t('office.claim_modal.title')}</h3>
-                    <p className="text-[10px] text-blue-100 font-medium">{t('office.table.app_id')}: {viewingClaim.Appl_ID}</p>
+                    <p className="text-[10px] text-blue-100 font-medium mt-1 uppercase tracking-wider">{t('office.table.app_id')}: #...</p>
                   </div>
                 </div>
                 <button onClick={() => setViewingClaim(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">

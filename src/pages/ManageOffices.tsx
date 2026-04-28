@@ -329,6 +329,7 @@ const ManageOffices: React.FC = () => {
           <table className="w-full text-left">
             <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold">
               <tr>
+                <th className="px-6 py-3 w-16 text-center">S.No.</th>
                 <th className="px-6 py-3">{t('manage.office_name')}</th>
                 <th className="px-6 py-3">{t('admin.stats.depts')}</th>
                 <th className="px-6 py-3">{t('manage.officer_in_charge')}</th>
@@ -343,6 +344,7 @@ const ManageOffices: React.FC = () => {
                   const officeUser = officeUsers.find(ou => String(ou.Office_ID).trim() === String(o.Office_ID).trim());
                   return (
                     <tr key={`${o.Office_ID}-${index}`} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 text-sm font-bold text-gray-400 text-center">{index + 1}</td>
                       <td className="px-6 py-4">
                         <div className="text-sm font-medium text-gray-900">{o.Office_Name}</div>
                         <div className="text-xs text-gray-500">{o.Address}</div>
