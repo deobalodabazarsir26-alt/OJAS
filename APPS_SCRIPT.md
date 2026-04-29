@@ -13,13 +13,13 @@ Deploy this script as a Web App in your Google Apps Script editor to power your 
    - This will ask for permissions. **You MUST allow access to both Spreadsheet and Drive.**
    - It will create all required sheets and a "Logs" sheet for debugging.
 
-   **FIXING THE "UrlFetchApp" PERMISSION ERROR**:
-   - If you get a "permission to call UrlFetchApp" error:
-   - Click the **Gear Icon** (Project Settings) on the left.
+   **FIXING THE "Access denied: DriveApp" ERROR (CRITICAL)**:
+   - If you get "Access denied: DriveApp" or "permission to call UrlFetchApp":
+   - Click the **Gear Icon** (Project Settings) on the left of the Apps Script editor.
    - Check **"Show 'appsscript.json' manifest file in editor"**.
    - Go back to the **Editor** (< > icon).
    - Click on the new **`appsscript.json`** file.
-   - **Delete everything** and paste this exact code:
+   - **Delete everything** inside and paste this exact code:
    ```json
    {
      "timeZone": "Asia/Kolkata",
@@ -33,13 +33,7 @@ Deploy this script as a Web App in your Google Apps Script editor to power your 
      ]
    }
    ```
-   - Save (Ctrl+S) and try running `AUTHORIZE_DRIVE_ACCESS` again.
-
-   **FIXING "Access denied: DriveApp" ERROR during upload**:
-   - This error means the script was deployed without proper Drive permissions or has not been authorized.
-   - Follow the `appsscript.json` steps above (Step 18-36) to manually set the `oauthScopes`.
-   - Ensure `https://www.googleapis.com/auth/drive` is included.
-   - **IMPORTANT:** After updating `appsscript.json`, you **MUST** re-deploy: 
+   - Save (Ctrl+S) and then **RE-DEPLOY**:
      - Go to **Deploy > Manage Deployments**.
      - Click the **Pencil icon** (Edit) on your Active deployment.
      - Select **New Version** from the version dropdown.
@@ -56,7 +50,7 @@ Deploy this script as a Web App in your Google Apps Script editor to power your 
 /**
  * CONFIGURATION
  */
-const ROOT_FOLDER_ID = '1yRKbW_KIQ6L15giJc16lgEz7iImUaWf8'; // <--- CHANGE THIS!
+const ROOT_FOLDER_ID = 'PASTE_YOUR_FOLDER_ID_HERE'; // <--- CHANGE THIS!
 
 /**
  * Helper to get the Spreadsheet instance
@@ -138,8 +132,8 @@ function getDatabaseSchema() {
     'Application': ['Appl_ID', 'Adv_ID', 'Post_ID', 'User_ID', 'Apply_Date', 'Status', 'Remark', 'T_STMP_ADD', 'T_STMP_UPD'],
     'Additional_Info': ['Addl_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Is_CG', 'Domicile_State', 'Domicile_District', 'Locality', 'Domicile_Certificate_URL', 'Caste_Category', 'Caste_State', 'Caste_District', 'Caste_Certificate_URL', 'Is_PWD', 'PwD_State', 'PwD_District', 'PwD_Percentage', 'PwD_Certificate_URL', 'T_STMP_ADD', 'T_STMP_UPD'],
     'Address_Info': ['Addr_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Perm_Address', 'Perm_Landmark', 'Perm_State', 'Perm_District', 'Perm_Pincode', 'Is_Same', 'Curr_Address', 'Curr_Landmark', 'Curr_State', 'Curr_District', 'Curr_Pincode', 'T_STMP_ADD', 'T_STMP_UPD'],
-    'Qualification_Info': ['Qual_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Qualification_Type', 'Course_Name', 'Board_Name', 'Institute_Name', 'Pass_Year', 'Result_Status', 'Marks_Type', 'Max_Marks', 'Marks_Obtained', 'Percentage', 'T_STMP_ADD', 'T_STMP_UPD'],
-    'Experience_Info': ['Exp_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Currently_Working', 'Employer_Type', 'Employment_Type', 'Employer_Name', 'Employer_Address', 'Post_Held', 'Start_Date', 'End_Date', 'T_STMP_ADD', 'T_STMP_UPD'],
+    'Qualification_Info': ['Qual_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Qualification_Type', 'Course_Name', 'Board_Name', 'Institute_Name', 'Pass_Year', 'Result_Status', 'Marks_Type', 'Max_Marks', 'Marks_Obtained', 'Percentage', 'Qual_Doc', 'T_STMP_ADD', 'T_STMP_UPD'],
+    'Experience_Info': ['Exp_ID', 'Appl_ID', 'User_ID', 'Candidate_Name', 'Currently_Working', 'Employer_Type', 'Employment_Type', 'Employer_Name', 'Employer_Address', 'Post_Held', 'Start_Date', 'End_Date', 'Exp_Doc', 'T_STMP_ADD', 'T_STMP_UPD'],
     'Claim': ['Claim_ID', 'Appl_ID', 'User_ID', 'Description', 'Proof_Doc_URL', 'Status', 'Officer_Remark', 'T_STMP_ADD', 'T_STMP_UPD'],
     'Global_Constants': ['Constant_ID', 'Category', 'Value', 'T_STMP_ADD', 'T_STMP_UPD'],
     'Logs': ['Timestamp', 'Message', 'Data']

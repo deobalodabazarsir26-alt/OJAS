@@ -95,13 +95,17 @@ const ManageApplications: React.FC = () => {
       
       // 1. Delete Files from Drive
       updateProgress(10, t('manage_applications.progress_finding', 'Finding related records...'));
-      const [addInfos, allClaims] = await Promise.all([
+      const [addInfos, allClaims, quals, exps] = await Promise.all([
         sheetService.getAll<AdditionalInfo>('Additional_Info'),
-        sheetService.getAll<Claim>('Claim')
+        sheetService.getAll<Claim>('Claim'),
+        sheetService.getAll<QualificationInfo>('Qualification_Info'),
+        sheetService.getAll<ExperienceInfo>('Experience_Info')
       ]);
       
       const foundAddInfo = addInfos.find(i => String(i.Appl_ID) === String(appl.Appl_ID));
       const applClaims = allClaims.filter(c => String(c.Appl_ID) === String(appl.Appl_ID));
+      const applQuals = quals.filter(q => String(q.Appl_ID) === String(appl.Appl_ID));
+      const applExps = exps.filter(e => String(e.Appl_ID) === String(appl.Appl_ID));
       
       const filesToDelete: string[] = [];
       if (foundAddInfo) {
@@ -112,6 +116,14 @@ const ManageApplications: React.FC = () => {
       
       applClaims.forEach(claim => {
         if (claim.Proof_Doc_URL?.startsWith('http')) filesToDelete.push(claim.Proof_Doc_URL);
+      });
+
+      applQuals.forEach(q => {
+        if (q.Qual_Doc?.startsWith('http')) filesToDelete.push(q.Qual_Doc);
+      });
+
+      applExps.forEach(e => {
+        if (e.Exp_Doc?.startsWith('http')) filesToDelete.push(e.Exp_Doc);
       });
 
       if (filesToDelete.length > 0) {

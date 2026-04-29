@@ -1,6 +1,6 @@
 // This service will handle data persistence.
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxQY1rMNpLD5UeyXX8GDoXtbR0nzxwxZFPsf-IA0l3XgPz06JCVNNJEokmu7mn-EHH_/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI90880NwfFRixNq09c5FB1YqKU2MneyzeYpTvaf1OMRMR-nxSrJ8MILZgQMNcet5A/exec';
 
 const STORAGE_KEYS = {
   User: 'ojas_users',
@@ -482,10 +482,9 @@ export const sheetService = {
           if (result.startsWith('http')) {
             resolve(result);
           } else if (result.includes('Access denied: DriveApp')) {
-            console.error('DriveApp access denied in Apps Script. Check APPS_SCRIPT.md for fix.');
-            // Fallback for better DX
-            const dataUrl = await getDataUrl(file);
-            resolve(dataUrl);
+            const errorMsg = 'Access Denied: DriveApp service is not authorized in your Apps Script. Please follow the "FIXING THE Access denied: DriveApp ERROR" section in APPS_SCRIPT.md, then RE-DEPLOY your script as a new version.';
+            console.error(errorMsg);
+            reject(new Error(errorMsg));
           } else if (result.startsWith('Error')) {
             reject(new Error(result));
           } else {

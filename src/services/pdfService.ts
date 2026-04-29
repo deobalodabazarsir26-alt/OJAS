@@ -34,6 +34,20 @@ export const pdfService = {
         { label: t('profile.form.pwd_cert'), url: additionalInfo?.PwD_Certificate_URL },
       ].filter(c => c.url);
 
+      // Add qualification docs
+      quals.forEach((q) => {
+        if (q.Qual_Doc) {
+          certificates.push({ label: `${t('apply.sum_course')}: ${q.Course_Name} (${t('apply.uploaded_docs')})`, url: q.Qual_Doc });
+        }
+      });
+
+      // Add experience docs
+      exps.forEach((e) => {
+        if (e.Exp_Doc) {
+          certificates.push({ label: `${t('apply.sum_employer')}: ${e.Employer_Name} (${t('apply.uploaded_docs')})`, url: e.Exp_Doc });
+        }
+      });
+
       for (const cert of certificates) {
         if (cert.url) {
           try {

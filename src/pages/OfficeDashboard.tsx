@@ -413,6 +413,9 @@ const OfficeDashboard: React.FC = () => {
       else if (profile?.DOB_Doc) setActiveDocUrl(profile.DOB_Doc);
       else if (addInfo?.Domicile_Certificate_URL) setActiveDocUrl(addInfo.Domicile_Certificate_URL);
       else if (addInfo?.Caste_Certificate_URL) setActiveDocUrl(addInfo.Caste_Certificate_URL);
+      else if (addInfo?.PwD_Certificate_URL) setActiveDocUrl(addInfo.PwD_Certificate_URL);
+      else if (appQuals.length > 0 && appQuals[0].Qual_Doc) setActiveDocUrl(appQuals[0].Qual_Doc);
+      else if (appExps.length > 0 && appExps[0].Exp_Doc) setActiveDocUrl(appExps[0].Exp_Doc);
       else setActiveDocUrl(null);
 
     } catch (error) {
@@ -1194,11 +1197,41 @@ const OfficeDashboard: React.FC = () => {
                   {/* Left Column: Applicant Details (7/12) */}
                   <div className="lg:col-span-7 space-y-6 overflow-y-auto pr-2">
                     {/* Personal Info */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden">
+                      {/* Photo & Signature at Top Right */}
+                      <div className="absolute top-4 right-4 flex flex-col space-y-2 items-center z-10">
+                        {applicantProfile?.Photo_URL && (
+                          <div className="flex flex-col items-center">
+                            <div className="w-20 h-20 rounded border border-gray-200 overflow-hidden bg-white shadow-sm">
+                               <img 
+                                  src={getEmbedUrl(applicantProfile.Photo_URL)} 
+                                  alt="Photo" 
+                                  className="w-full h-full object-cover" 
+                                  referrerPolicy="no-referrer"
+                                />
+                            </div>
+                            <span className="text-[9px] text-gray-400 mt-0.5 font-bold">{t('office.review_modal.photo')}</span>
+                          </div>
+                        )}
+                        {applicantProfile?.Signature_URL && (
+                          <div className="flex flex-col items-center">
+                            <div className="w-24 h-8 rounded border border-gray-200 overflow-hidden bg-white shadow-sm p-0.5">
+                               <img 
+                                  src={getEmbedUrl(applicantProfile.Signature_URL)} 
+                                  alt="Signature" 
+                                  className="w-full h-full object-contain" 
+                                  referrerPolicy="no-referrer"
+                                />
+                            </div>
+                            <span className="text-[9px] text-gray-400 mt-0.5 font-bold">{t('office.review_modal.sign')}</span>
+                          </div>
+                        )}
+                      </div>
+
                       <h4 className="font-bold text-gray-900 border-b pb-2 mb-4 uppercase text-sm tracking-wider text-blue-600 flex items-center">
                         <User className="w-4 h-4 mr-2" /> {t('office.review_modal.personal_details')}
                       </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 sm:pr-28">
                         <div className="flex justify-between border-b border-gray-50 pb-1">
                           <p className="text-xs text-gray-500 uppercase font-semibold">{t('profile.form.name')}</p>
                           <div className="text-right">
@@ -1370,42 +1403,6 @@ const OfficeDashboard: React.FC = () => {
 
                   {/* Right Column: Review Sidebar (5/12) */}
                   <div className="lg:col-span-5 space-y-6 flex flex-col h-full">
-                    {/* Photo & Signature */}
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col items-center">
-                          <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">{t('office.review_modal.photo')}</p>
-                          <div className="w-full aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-100 shadow-inner">
-                            {applicantProfile?.Photo_URL ? (
-                              <img 
-                                src={getEmbedUrl(applicantProfile.Photo_URL)} 
-                                alt="Photo" 
-                                className="w-full h-full object-cover" 
-                                referrerPolicy="no-referrer" 
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400">{t('common.no_data', 'No Data')}</div>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <p className="text-[10px] font-bold text-gray-500 uppercase mb-2">{t('office.review_modal.sign')}</p>
-                          <div className="w-full aspect-[3/1] bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-100 shadow-inner mt-auto">
-                            {applicantProfile?.Signature_URL ? (
-                              <img 
-                                src={getEmbedUrl(applicantProfile.Signature_URL)} 
-                                alt="Signature" 
-                                className="w-full h-full object-contain" 
-                                referrerPolicy="no-referrer" 
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">{t('common.no_data', 'No Data')}</div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Document Selection & Viewer */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col flex-1 overflow-hidden min-h-[450px]">
                       <div className="p-4 border-b border-gray-100 bg-gray-50">
@@ -1417,6 +1414,16 @@ const OfficeDashboard: React.FC = () => {
                             { label: 'Dom.', fullLabel: 'Domicile', url: additionalInfo?.Domicile_Certificate_URL },
                             { label: 'Caste', fullLabel: 'Caste Cert.', url: additionalInfo?.Caste_Certificate_URL },
                             { label: 'PwD', fullLabel: 'PwD Cert.', url: additionalInfo?.PwD_Certificate_URL },
+                            ...qualifications.map((q, i) => ({ 
+                              label: `Q${i+1}`, 
+                              fullLabel: q.Course_Name || `Qualification ${i+1}`, 
+                              url: q.Qual_Doc 
+                            })),
+                            ...experiences.map((e, i) => ({ 
+                              label: `E${i+1}`, 
+                              fullLabel: e.Employer_Name || `Experience ${i+1}`, 
+                              url: e.Exp_Doc 
+                            })),
                           ].filter(d => d.url).map((doc, idx) => (
                             <button
                               key={idx}

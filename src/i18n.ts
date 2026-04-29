@@ -530,6 +530,8 @@ const resources = {
         "no_exp": "No experience added.",
         "declaration_title": "Declaration",
         "declaration_text": "I hereby declare that all the information provided in this application is true, complete and correct to the best of my knowledge and belief. I understand that in the event of any information being found false or incorrect at any stage, my candidacy/appointment is liable to be cancelled/terminated.",
+        "upload_qual_doc": "Qualification Certificate (JPG/PNG)",
+        "upload_exp_doc": "Experience Certificate (JPG/PNG)",
         "submit_application": "Submit Application",
         "prev": "Previous",
         "next": "Next"
@@ -1204,6 +1206,8 @@ const resources = {
         "no_exp": "कोई अनुभव नहीं जोड़ा गया।",
         "declaration_title": "घोषणा",
         "declaration_text": "मैं इसके द्वारा घोषणा करता/करती हूँ कि इस आवेदन में दी गई सभी जानकारी मेरे सर्वोत्तम ज्ञान और विश्वास के अनुसार सत्य, पूर्ण और सही है। मैं समझता/समझती हूँ कि किसी भी स्तर पर कोई भी जानकारी गलत या त्रुटिपूर्ण पाए जाने की स्थिति में, मेरी उम्मीदवारी/नियुक्ति रद्द/समाप्त की जा सकती है।",
+        "upload_qual_doc": "योग्यता प्रमाणपत्र (JPG/PNG)",
+        "upload_exp_doc": "अनुभव प्रमाणपत्र (JPG/PNG)",
         "submit_application": "आवेदन जमा करें",
         "prev": "पिछला",
         "next": "अगला"

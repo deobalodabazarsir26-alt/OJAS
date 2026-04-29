@@ -165,6 +165,7 @@ export interface QualificationInfo {
   Max_Marks: string;
   Marks_Obtained: string;
   Percentage: string;
+  Qual_Doc?: string;
   T_STMP_ADD: string;
   T_STMP_UPD: string;
 }
@@ -182,6 +183,7 @@ export interface ExperienceInfo {
   Post_Held: string;
   Start_Date: string;
   End_Date: string;
+  Exp_Doc?: string;
   T_STMP_ADD: string;
   T_STMP_UPD: string;
 }

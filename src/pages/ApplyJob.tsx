@@ -15,7 +15,7 @@ import {
   ExperienceInfo,
 } from '../types';
 import { motion } from 'motion/react';
-import { Check, ChevronRight, ChevronLeft, Save, FileText, User, Home, GraduationCap, Briefcase, Info, Trash2 } from 'lucide-react';
+import { Check, ChevronRight, ChevronLeft, Save, FileText, User, Home, GraduationCap, Briefcase, Info, Trash2, Upload, Loader2, CheckCircle } from 'lucide-react';
 import { useConstants } from '../hooks/useConstants';
 import { INDIA_STATES, INDIA_STATES_DISTRICTS } from '../data/indiaData';
 import { useTranslation } from 'react-i18next';
@@ -240,9 +240,10 @@ const ApplyJob: React.FC = () => {
             if (!q.Max_Marks) { newErrors[`qual_${i}_Max_Marks`] = true; qError = true; }
             if (!q.Marks_Obtained) { newErrors[`qual_${i}_Marks_Obtained`] = true; qError = true; }
             if (!q.Percentage) { newErrors[`qual_${i}_Percentage`] = true; qError = true; }
+            if (!q.Qual_Doc) { newErrors[`qual_${i}_Qual_Doc`] = true; qError = true; }
 
             if (qError) {
-               toast.error(`Please fill all fields for qualification ${i + 1}.`);
+               toast.error(`Please fill all fields and upload certificate for qualification ${i + 1}.`);
                isValid = false;
                continue;
             }
@@ -314,9 +315,10 @@ const ApplyJob: React.FC = () => {
             if (!e.Employment_Type) { newErrors[`exp_${i}_Employment_Type`] = true; eError = true; }
             if (!e.Post_Held) { newErrors[`exp_${i}_Post_Held`] = true; eError = true; }
             if (!e.Start_Date) { newErrors[`exp_${i}_Start_Date`] = true; eError = true; }
+            if (!e.Exp_Doc) { newErrors[`exp_${i}_Exp_Doc`] = true; eError = true; }
 
             if (eError) {
-               toast.error(`Please fill required fields for experience ${i + 1}.`);
+               toast.error(`Please fill all required fields and upload certificate for experience ${i + 1}.`);
                isValid = false;
                continue;
             }
@@ -377,6 +379,39 @@ const ApplyJob: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
+  const handleArrayFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+    stateSetter: React.Dispatch<React.SetStateAction<any[]>>,
+    fieldName: string
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Only image files (JPG, PNG, etc.) are allowed');
+      e.target.value = '';
+      return;
+    }
+
+    const limit = 2 * 1024 * 1024; // 2MB
+    if (file.size > limit) {
+      toast.error('File size should be less than 2 MB');
+      e.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      stateSetter(prev => {
+        const next = [...prev];
+        next[index] = { ...next[index], [fieldName]: reader.result as string };
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = async () => {
     if (!validateStep(5)) return;
     if (!user || !ad || !post) return;
@@ -402,6 +437,23 @@ const ApplyJob: React.FC = () => {
     try {
       let applId = editingApplId;
       const timestamp = new Date().toISOString();
+
+      // Helper to upload base64 to Drive
+      const uploadIfNeeded = async (url: string | undefined, prefix: string) => {
+        if (url && url.startsWith('data:')) {
+          try {
+            const resp = await fetch(url);
+            const blob = await resp.blob();
+            const file = new File([blob], `${prefix}_${applId || 'new'}.png`, { type: blob.type });
+            return await sheetService.uploadFile(file);
+          } catch (e) {
+            console.error(`Upload failed for ${prefix}:`, e);
+            toast.error(`Failed to upload ${prefix}. Using temporary link.`);
+            return url;
+          }
+        }
+        return url;
+      };
 
       if (!isEditMode) {
         updateProgress(10, 'Generating application ID...');
@@ -435,9 +487,10 @@ const ApplyJob: React.FC = () => {
       // Update or Insert Additional Info
       updateProgress(50, `${isEditMode ? 'Updating' : 'Saving'} additional information...`);
       
-      // For 1:1 tables in Cloud Database, it's safer to delete by Appl_ID and re-insert 
-      // if using unique IDs, or just update if keys are stable.
-      // But adding Addl_ID now, so we'll handle it.
+      const domicileUrl = await uploadIfNeeded(additionalInfo.Domicile_Certificate_URL, 'domicile');
+      const casteUrl = await uploadIfNeeded(additionalInfo.Caste_Certificate_URL, 'caste');
+      const pwdUrl = await uploadIfNeeded(additionalInfo.PwD_Certificate_URL, 'pwd');
+
       let existingAddl: any = null;
       if (isEditMode) {
         const allAddl = await sheetService.getAll<any>('Additional_Info');
@@ -455,16 +508,16 @@ const ApplyJob: React.FC = () => {
         Domicile_State: additionalInfo.Domicile_State || '',
         Domicile_District: additionalInfo.Domicile_District || '',
         Locality: additionalInfo.Locality || '',
-        Domicile_Certificate_URL: additionalInfo.Domicile_Certificate_URL || '',
+        Domicile_Certificate_URL: domicileUrl || '',
         Caste_Category: additionalInfo.Caste_Category || '',
         Caste_State: additionalInfo.Caste_State || '',
         Caste_District: additionalInfo.Caste_District || '',
-        Caste_Certificate_URL: additionalInfo.Caste_Certificate_URL || '',
+        Caste_Certificate_URL: casteUrl || '',
         Is_PWD: additionalInfo.Is_PWD || 'No',
         PwD_State: additionalInfo.PwD_State || '',
         PwD_District: additionalInfo.PwD_District || '',
         PwD_Percentage: additionalInfo.PwD_Percentage || '',
-        PwD_Certificate_URL: additionalInfo.PwD_Certificate_URL || '',
+        PwD_Certificate_URL: pwdUrl || '',
         T_STMP_UPD: timestamp,
       };
 
@@ -536,11 +589,14 @@ const ApplyJob: React.FC = () => {
         
         updateProgress(70 + (i / qualifications.length) * 15, `${isNew ? 'Inserting' : 'Updating'} qualification: ${q.Qualification_Type}`);
 
+        const qualDocUrl = await uploadIfNeeded(q.Qual_Doc, `qual_${i}`);
+
         if (isNew) {
           const finalQualId = sheetService.generateUniqueId();
           await sheetService.insert('Qualification_Info', { 
             ...q, 
             Qual_ID: finalQualId,
+            Qual_Doc: qualDocUrl || '',
             Appl_ID: applId, 
             User_ID: user.User_ID, 
             Candidate_Name: candidateName,
@@ -550,6 +606,7 @@ const ApplyJob: React.FC = () => {
         } else {
           await sheetService.update('Qualification_Info', 'Qual_ID', q.Qual_ID!, {
             ...q,
+            Qual_Doc: qualDocUrl || '',
             Appl_ID: applId,
             User_ID: user.User_ID,
             Candidate_Name: candidateName,
@@ -581,11 +638,14 @@ const ApplyJob: React.FC = () => {
 
         updateProgress(85 + (i / experiences.length) * 10, `${isNew ? 'Inserting' : 'Updating'} experience: ${e.Employer_Name}`);
 
+        const expDocUrl = await uploadIfNeeded(e.Exp_Doc, `exp_${i}`);
+
         if (isNew) {
           const finalExpId = sheetService.generateUniqueId();
           await sheetService.insert('Experience_Info', { 
             ...e, 
             Exp_ID: finalExpId,
+            Exp_Doc: expDocUrl || '',
             Appl_ID: applId, 
             User_ID: user.User_ID, 
             Candidate_Name: candidateName,
@@ -595,6 +655,7 @@ const ApplyJob: React.FC = () => {
         } else {
           await sheetService.update('Experience_Info', 'Exp_ID', e.Exp_ID!, {
             ...e,
+            Exp_Doc: expDocUrl || '',
             Appl_ID: applId,
             User_ID: user.User_ID,
             Candidate_Name: candidateName,
@@ -1100,7 +1161,9 @@ const ApplyJob: React.FC = () => {
               <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4 relative">
                 {qualifications.length > 1 && (
                   <button
-                    onClick={() => setQualifications(qualifications.filter((_, idx) => idx !== i))}
+                    onClick={() => {
+                      setQualifications(qualifications.filter((_, idx) => idx !== i));
+                    }}
                     className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
                     title="Remove Qualification"
                   >
@@ -1216,23 +1279,40 @@ const ApplyJob: React.FC = () => {
                     }}
                     className={getInputClass(`qual_${i}_Percentage`, 'border rounded-md p-2 w-full')}
                   />
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1 font-hindi-support italic">
+                      {t('apply.upload_qual_doc')}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleArrayFileChange(e, i, setQualifications, 'Qual_Doc')}
+                      className={getInputClass(`qual_${i}_Qual_Doc`, 'mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100')}
+                    />
+                    {q.Qual_Doc && (
+                      <p className="mt-1 text-xs text-green-600 font-medium font-hindi-support">✓ {t('signup.file_selected', 'File selected')}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
             <button
-              onClick={() => setQualifications([...qualifications, { 
-                Qual_ID: `temp_${sheetService.generateUniqueId()}`,
-                Qualification_Type: 'Graduation Certificate',
-                Course_Name: '',
-                Board_Name: '',
-                Institute_Name: '',
-                Pass_Year: '',
-                Result_Status: 'Passed',
-                Marks_Type: 'Percentage',
-                Max_Marks: '',
-                Marks_Obtained: '',
-                Percentage: '',
-              }])}
+              onClick={() => {
+                setQualifications([...qualifications, { 
+                  Qual_ID: `temp_${sheetService.generateUniqueId()}`,
+                  Qualification_Type: 'Graduation Certificate',
+                  Course_Name: '',
+                  Board_Name: '',
+                  Institute_Name: '',
+                  Pass_Year: '',
+                  Result_Status: 'Passed',
+                  Marks_Type: 'Percentage',
+                  Max_Marks: '',
+                  Marks_Obtained: '',
+                  Percentage: '',
+                }]);
+              }}
               className="text-blue-600 font-medium hover:underline font-hindi-support"
             >
               + {t('apply.add_qualification')}
@@ -1250,7 +1330,9 @@ const ApplyJob: React.FC = () => {
               experiences.map((exp, i) => (
                 <div key={i} className="p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-4 relative">
                   <button
-                    onClick={() => setExperiences(experiences.filter((_, idx) => idx !== i))}
+                    onClick={() => {
+                      setExperiences(experiences.filter((_, idx) => idx !== i));
+                    }}
                     className="absolute top-2 right-2 text-red-500 hover:text-red-700 p-1"
                     title="Remove Experience"
                   >
@@ -1367,21 +1449,38 @@ const ApplyJob: React.FC = () => {
                       )}
                     </div>
                   </div>
+                  
+                  <div className="mt-2">
+                    <label className="block text-xs font-semibold text-gray-700 mb-1 font-hindi-support italic">
+                      {t('apply.upload_exp_doc')}
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleArrayFileChange(e, i, setExperiences, 'Exp_Doc')}
+                      className={getInputClass(`exp_${i}_Exp_Doc`, 'mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100')}
+                    />
+                    {exp.Exp_Doc && (
+                      <p className="mt-1 text-xs text-green-600 font-medium font-hindi-support">✓ {t('signup.file_selected', 'File selected')}</p>
+                    )}
+                  </div>
                 </div>
               ))
             )}
             <button
-              onClick={() => setExperiences([...experiences, { 
-                Exp_ID: `temp_${sheetService.generateUniqueId()}`,
-                Currently_Working: 'No',
-                Employer_Type: '',
-                Employment_Type: '',
-                Employer_Name: '',
-                Employer_Address: '',
-                Post_Held: '',
-                Start_Date: '',
-                End_Date: ''
-              }])}
+              onClick={() => {
+                setExperiences([...experiences, { 
+                  Exp_ID: `temp_${sheetService.generateUniqueId()}`,
+                  Currently_Working: 'No',
+                  Employer_Type: '',
+                  Employment_Type: '',
+                  Employer_Name: '',
+                  Employer_Address: '',
+                  Post_Held: '',
+                  Start_Date: '',
+                  End_Date: ''
+                }]);
+              }}
               className="text-blue-600 font-medium hover:underline font-hindi-support"
             >
               + {t('apply.add_experience')}
@@ -1395,13 +1494,12 @@ const ApplyJob: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900 border-b pb-4 font-hindi-support">{t('apply.steps.preview_declaration')}</h2>
             
             {/* Quick Preview */}
-            <div className="bg-gray-50 p-6 rounded-xl space-y-6 text-sm font-hindi-support border border-gray-100 relative">
-              {/* Photo Display */}
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b pb-6">
-                {/* Left side: Photo */}
+            <div className="bg-gray-50 p-6 rounded-xl space-y-6 text-sm font-hindi-support border border-gray-100 relative min-h-[220px]">
+              {/* Photo & Signature Display (Top Right like official form) */}
+              <div className="absolute top-6 right-6 hidden sm:flex flex-col space-y-4 items-center z-10">
                 {applicantProfile?.Photo_URL && (
-                  <div className="flex flex-col items-start">
-                    <div className="w-24 h-24 rounded border border-gray-300 overflow-hidden bg-white mb-2">
+                  <div className="flex flex-col items-center">
+                    <div className="w-24 h-24 rounded border-2 border-gray-200 overflow-hidden bg-white shadow-sm flex items-center justify-center">
                        <img 
                           src={getEmbedUrl(applicantProfile.Photo_URL)} 
                           alt="Applicant Photo" 
@@ -1409,13 +1507,57 @@ const ApplyJob: React.FC = () => {
                           referrerPolicy="no-referrer"
                         />
                     </div>
-                    <span className="text-xs text-gray-500 font-medium">{t('signup.applicant_photo', 'Applicant Photo')}</span>
+                    <span className="text-[10px] text-gray-500 mt-1 font-bold">{t('signup.applicant_photo', 'Applicant Photo')}</span>
+                  </div>
+                )}
+                {applicantProfile?.Signature_URL && (
+                  <div className="flex flex-col items-center">
+                    <div className="w-28 h-12 rounded border-2 border-gray-200 overflow-hidden bg-white shadow-sm p-1 flex items-center justify-center">
+                       <img 
+                          src={getEmbedUrl(applicantProfile.Signature_URL)} 
+                          alt="Signature" 
+                          className="w-full h-full object-contain" 
+                          referrerPolicy="no-referrer"
+                        />
+                    </div>
+                    <span className="text-[10px] text-gray-500 mt-1 font-bold">{t('signup.applicant_signature', 'Signature')}</span>
                   </div>
                 )}
               </div>
 
-              <div>
-                <h3 className="font-bold text-lg mb-3 text-blue-800 border-b pb-2">{t('apply.steps.general')}</h3>
+              {/* Mobile Photo/Sign View (at top centered) */}
+              <div className="sm:hidden flex justify-center space-x-4 mb-6 border-b pb-4">
+                {applicantProfile?.Photo_URL && (
+                  <div className="flex flex-col items-center">
+                    <div className="w-20 h-20 rounded border border-gray-300 overflow-hidden bg-white">
+                       <img 
+                          src={getEmbedUrl(applicantProfile.Photo_URL)} 
+                          alt="Applicant Photo" 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer"
+                        />
+                    </div>
+                    <span className="text-[10px] text-gray-500 mt-1 italic">{t('signup.applicant_photo', 'Photo')}</span>
+                  </div>
+                )}
+                {applicantProfile?.Signature_URL && (
+                  <div className="flex flex-col items-center">
+                    <div className="w-24 h-10 rounded border border-gray-300 overflow-hidden bg-white p-1">
+                       <img 
+                          src={getEmbedUrl(applicantProfile.Signature_URL)} 
+                          alt="Signature" 
+                          className="w-full h-full object-contain" 
+                          referrerPolicy="no-referrer"
+                        />
+                    </div>
+                    <span className="text-[10px] text-gray-500 mt-1 italic">{t('signup.applicant_signature', 'Sign')}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="sm:pr-40 space-y-8">
+                <div>
+                  <h3 className="font-bold text-lg mb-3 text-blue-800 border-b pb-2">{t('apply.steps.general')}</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div><span className="text-gray-500">{t('signup.name_mr_ms', 'Full Name')}:</span> <span className="font-medium text-gray-900">{applicantProfile?.Candidate_Name}</span> <span className="text-sm text-gray-600 font-hindi-support ml-1">({applicantProfile?.Candidate_Name_HI})</span></div>
                   <div><span className="text-gray-500">{t('signup.father_name', 'Father Name')}:</span> <span className="font-medium text-gray-900">{applicantProfile?.Father_Name}</span> <span className="text-sm text-gray-600 font-hindi-support ml-1">({applicantProfile?.Father_Name_HI})</span></div>
@@ -1491,6 +1633,7 @@ const ApplyJob: React.FC = () => {
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_type', 'Type')}</th>
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_marks', 'Marks')}</th>
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_result', 'Result')}</th>
+                            <th className="px-3 py-2 font-semibold">{t('apply.uploaded_docs')}</th>
                          </tr>
                        </thead>
                        <tbody className="divide-y divide-gray-200">
@@ -1503,6 +1646,11 @@ const ApplyJob: React.FC = () => {
                              <td className="px-3 py-2">{translateConstant(t, q.Marks_Type || '')}</td>
                              <td className="px-3 py-2">{q.Marks_Obtained}/{q.Max_Marks}</td>
                              <td className="px-3 py-2 font-medium">{q.Percentage}%</td>
+                             <td className="px-3 py-2">
+                               {q.Qual_Doc ? (
+                                 <a href={getEmbedUrl(q.Qual_Doc)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View</a>
+                               ) : <span className="text-gray-400">Not Uploaded</span>}
+                             </td>
                            </tr>
                          ))}
                        </tbody>
@@ -1525,6 +1673,7 @@ const ApplyJob: React.FC = () => {
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_post', 'Post Held')}</th>
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_type', 'Type')}</th>
                             <th className="px-3 py-2 font-semibold">{t('apply.sum_period', 'Period')}</th>
+                            <th className="px-3 py-2 font-semibold">{t('apply.uploaded_docs')}</th>
                          </tr>
                        </thead>
                        <tbody className="divide-y divide-gray-200">
@@ -1540,6 +1689,11 @@ const ApplyJob: React.FC = () => {
                              <td className="px-3 py-2">
                                {exp.Start_Date} {t('ad_details.to', 'to')} {exp.Currently_Working === 'Yes' ? t('apply.present', 'Present') : exp.End_Date}
                              </td>
+                             <td className="px-3 py-2">
+                                {exp.Exp_Doc ? (
+                                  <a href={getEmbedUrl(exp.Exp_Doc)} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">View</a>
+                                ) : <span className="text-gray-400">Not Uploaded</span>}
+                              </td>
                            </tr>
                          ))}
                        </tbody>
@@ -1548,6 +1702,7 @@ const ApplyJob: React.FC = () => {
                 ) : (
                   <span className="text-gray-500 italic">{t('apply.no_exp', 'No experience added.')}</span>
                 )}
+              </div>
               </div>
             </div>
 
@@ -1575,8 +1730,8 @@ const ApplyJob: React.FC = () => {
 
               {/* Signature Block Below Declaration */}
               {applicantProfile?.Signature_URL && (
-                <div className="mt-6 border-t border-blue-200 pt-6 flex flex-col items-end">
-                  <div className="w-32 h-16 rounded border border-gray-300 overflow-hidden bg-white mb-2 p-1">
+                <div className="mt-4 border-t border-blue-100 pt-4 flex flex-col items-end">
+                  <div className="w-16 h-6 rounded border border-gray-200 overflow-hidden bg-white mb-1 p-0.5">
                      <img 
                         src={getEmbedUrl(applicantProfile.Signature_URL)} 
                         alt={t('signup.applicant_signature')} 
@@ -1584,8 +1739,8 @@ const ApplyJob: React.FC = () => {
                         referrerPolicy="no-referrer"
                       />
                   </div>
-                  <span className="text-xs text-blue-900 font-bold">{applicantProfile?.Candidate_Name}</span>
-                  <span className="text-[10px] text-blue-600">{t('signup.applicant_signature')}</span>
+                  <span className="text-[9px] text-blue-900 font-bold leading-none">{applicantProfile?.Candidate_Name}</span>
+                  <span className="text-[8px] text-blue-600 leading-none">{t('signup.applicant_signature')}</span>
                 </div>
               )}
             </div>
