@@ -335,6 +335,16 @@ function doPost(e) {
       }
     }
 
+    // 0.2 HANDLE LIST FILES (For cleanup tool)
+    if (action === 'listFiles') {
+      try {
+        const files = listAllFilesInCloud();
+        return ContentService.createTextOutput(JSON.stringify(files)).setMimeType(ContentService.MimeType.JSON);
+      } catch (err) {
+        return ContentService.createTextOutput("Error: List failed. " + err.toString()).setMimeType(ContentService.MimeType.TEXT);
+      }
+    }
+
     const sheetName = requestData.sheetName;
     let payload = requestData.payload;
 
@@ -794,6 +804,56 @@ function handleCascadingAdvertisementDelete(advId) {
   }
   
   return ContentService.createTextOutput("Cascading Advertisement Delete Successful").setMimeType(ContentService.MimeType.TEXT);
+}
+
+/**
+ * Helper to list all files in the root folder and subfolders
+ */
+function listAllFilesInCloud() {
+  let rootFolder;
+  try {
+    const folderId = String(ROOT_FOLDER_ID || "").trim();
+    // Only attempt getFolderById if the ID looks like a real ID and is not the placeholder
+    if (folderId && folderId.length > 20 && !folderId.includes("PASTE_YOUR_FOLDER_ID")) {
+      rootFolder = DriveApp.getFolderById(folderId);
+    } else {
+      rootFolder = DriveApp.getRootFolder();
+    }
+  } catch (e) {
+    // If anything fails (invalid ID, no access), fallback to Root Folder (My Drive)
+    rootFolder = DriveApp.getRootFolder();
+  }
+  
+  const files = [];
+  const maxFiles = 3000;
+  
+  if (!rootFolder) return [];
+
+  function getFiles(folder) {
+    if (!folder || files.length >= maxFiles) return;
+    
+    try {
+      const fileIter = folder.getFiles();
+      while (fileIter.hasNext() && files.length < maxFiles) {
+        const file = fileIter.next();
+        files.push({
+          name: file.getName(),
+          url: file.getUrl(),
+          id: file.getId()
+        });
+      }
+      
+      const folderIter = folder.getFolders();
+      while (folderIter.hasNext() && files.length < maxFiles) {
+        getFiles(folderIter.next());
+      }
+    } catch (err) {
+      // Skip folders we can't access
+    }
+  }
+  
+  getFiles(rootFolder);
+  return files;
 }
 
 /**

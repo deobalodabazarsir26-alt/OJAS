@@ -1,8 +1,8 @@
 // This service will handle data persistence.
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyI90880NwfFRixNq09c5FB1YqKU2MneyzeYpTvaf1OMRMR-nxSrJ8MILZgQMNcet5A/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUFCKUHGRQTcOKXHDhvtN7_MSl7Q24Har3cSqqeooGJ2lvA9uwVlL6-KTqs4i2UzYH/exec';
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   User: 'ojas_users',
   Department: 'ojas_departments',
   Office: 'ojas_offices',
@@ -527,6 +527,41 @@ export const sheetService = {
       console.log('File deletion result:', result);
     } catch (error) {
       console.error('Error in sheetService.deleteFile:', error);
+    }
+  },
+
+  async listFiles(): Promise<{ name: string; url: string; id: string }[]> {
+    if (!APPS_SCRIPT_URL || !isAppsScriptAvailable) {
+      return [];
+    }
+
+    try {
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          action: 'listFiles',
+        }),
+      });
+      const responseText = await response.text();
+      try {
+        const result = JSON.parse(responseText);
+        if (typeof result === 'object' && result !== null && 'error' in result) {
+          throw new Error(String(result.error));
+        }
+        return Array.isArray(result) ? result : [];
+      } catch (e) {
+        if (responseText.startsWith('Error:')) {
+          throw new Error(responseText);
+        }
+        console.error('Apps Script returned non-JSON:', responseText);
+        throw new Error('Apps Script returned invalid response. Check your script deployment.');
+      }
+    } catch (error) {
+      console.error('Error in sheetService.listFiles:', error);
+      return [];
     }
   }
 };
