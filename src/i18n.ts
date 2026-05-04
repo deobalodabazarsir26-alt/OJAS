@@ -59,7 +59,8 @@ const resources = {
         "sno": "S.No.",
         "na": "N/A",
         "officer_in_charge": "Officer-in-Charge",
-        "unknown": "Unknown"
+        "unknown": "Unknown",
+        "close": "Close"
       },
       "constants": {
         "Male": "Male",
@@ -757,7 +758,8 @@ const resources = {
         "sno": "क्र.",
         "na": "लागू नहीं",
         "officer_in_charge": "प्रभारी अधिकारी",
-        "unknown": "अज्ञात"
+        "unknown": "अज्ञात",
+        "close": "बंद करें"
       },
       "constants": {
         "Male": "पुरुष",
