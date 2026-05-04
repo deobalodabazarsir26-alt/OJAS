@@ -403,7 +403,29 @@ const resources = {
         "new_appl_received": "New application received for Advertisement #{{id}}",
         "new_user_registered": "New user registered: {{name}}",
         "new_ad_published": "New advertisement published: {{title}}",
-        "hours_ago": "{{count}}h ago"
+        "hours_ago": "{{count}}h ago",
+        "cleanup_drive": "Cloud Cleanup Tool",
+        "cleanup": {
+          "title": "Cloud Storage Cleanup",
+          "description": "This tool scans your Google Drive folder for files that are not linked to any user profile, advertisement, or application in the database.",
+          "start_scan": "Start Scanning Cloud",
+          "scanning": "Scanning all folders and sheets...",
+          "wait": "This may take a few minutes depending on file count.",
+          "total_files": "Total Files",
+          "linked": "Linked",
+          "orphaned": "Not Linked",
+          "orphaned_list": "Orphaned Files (Top 5)",
+          "all_subfolder": "Includes all subfolders",
+          "more_files": "more files...",
+          "re_scan": "Re-scan",
+          "clear_unlinked": "Clear {{count}} Unlinked Files",
+          "no_orphans": "Storage is Clean!",
+          "no_orphans_desc": "All files in your cloud storage are correctly linked to your database.",
+          "confirm_delete": "Are you sure you want to delete {{count}} orphaned files? This action cannot be undone.",
+          "deleting": "Deleting orphaned files...",
+          "deleting_progress": "Deleting file {{current}} of {{total}}...",
+          "success": "Successfully deleted {{count}} orphaned files"
+        }
       },
       "ad_details": {
         "title": "Advertisement Details",
@@ -1079,7 +1101,29 @@ const resources = {
         "new_appl_received": "विज्ञापन #{{id}} के लिए नया आवेदन प्राप्त हुआ",
         "new_user_registered": "नया उपयोगकर्ता पंजीकृत: {{name}}",
         "new_ad_published": "नया विज्ञापन प्रकाशित: {{title}}",
-        "hours_ago": "{{count}} घंटे पहले"
+        "hours_ago": "{{count}} घंटे पहले",
+        "cleanup_drive": "क्लाउड क्लीनअप टूल",
+        "cleanup": {
+          "title": "क्लाउड स्टोरेज क्लीनअप",
+          "description": "यह टूल आपके गूगल ड्राइव फोल्डर में उन फाइलों को स्कैन करता है जो डेटाबेस में किसी भी यूजर प्रोफाइल, विज्ञापन या आवेदन से लिंक नहीं हैं।",
+          "start_scan": "क्लाउड स्कैनिंग शुरू करें",
+          "scanning": "सभी फोल्डर और शीट स्कैन किए जा रहे हैं...",
+          "wait": "फाइलों की संख्या के आधार पर इसमें कुछ मिनट लग सकते हैं।",
+          "total_files": "कुल फाइलें",
+          "linked": "लिंक की गई",
+          "orphaned": "लिंक नहीं की गई",
+          "orphaned_list": "अनाथ फाइलें (शीर्ष 5)",
+          "all_subfolder": "सभी सबफोल्डर शामिल हैं",
+          "more_files": "अधिक फाइलें...",
+          "re_scan": "पुनः स्कैन करें",
+          "clear_unlinked": "{{count}} अनलिंक्ड फाइलें हटाएं",
+          "no_orphans": "स्टोरेज सुरक्षित है!",
+          "no_orphans_desc": "आपके क्लाउड स्टोरेज की सभी फाइलें आपके डेटाबेस से सही ढंग से लिंक हैं।",
+          "confirm_delete": "क्या आप वाकई {{count}} अनाथ फाइलों को हटाना चाहते हैं? इस क्रिया को पूर्ववत नहीं किया जा सकता।",
+          "deleting": "अनाथ फाइलें हटाई जा रही हैं...",
+          "deleting_progress": "फाइल {{current}}/{{total}} हटाई जा रही है...",
+          "success": "{{count}} अनाथ फाइलें सफलतापूर्वक हटा दी गईं"
+        }
       },
       "ad_details": {
         "title": "विज्ञापन विवरण",
